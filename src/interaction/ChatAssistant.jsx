@@ -68,11 +68,14 @@ function ChatAssistant() {
       const history = historyRef.current;
       const data = await sendChatMessage(userMsg, history);
 
-      const result = data?.result;
-      const parsed = typeof result === "string" ? JSON.parse(result) : result;
+      // Try multiple paths to find parsed data
+      let parsed = data?.result || data;
+      if (typeof parsed === "string") {
+        try { parsed = JSON.parse(parsed); } catch { parsed = {}; }
+      }
+
       let assistantReply =
         parsed?.messageToUser || JSON.stringify(parsed || data, null, 2);
-      // Always end with a question to keep conversation flowing
       if (!assistantReply.trim().endsWith("?") && !assistantReply.trim().endsWith("؟")) {
         const fallbacks = [
           " Is there anything else to add?",
@@ -88,10 +91,11 @@ function ChatAssistant() {
         { role: "assistant", text: assistantReply },
       ];
 
-      if (parsed && parsed.hcpName && (parsed.status === "logged" || parsed.status === "updated")) {
-        dispatch(setFormPrefill(parsed));
-        // auto-check form for missing fields after a short delay
-        setTimeout(() => handleCheckForm(parsed), 600);
+      // Prefill form with any fields we can find
+      const fillData = parsed && parsed.hcpName ? parsed : (data?.hcpName ? data : null);
+      if (fillData && fillData.hcpName) {
+        dispatch(setFormPrefill(fillData));
+        setTimeout(() => handleCheckForm(fillData), 600);
       }
       dispatch(refreshList());
     } catch (err) {
