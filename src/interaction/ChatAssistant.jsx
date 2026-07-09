@@ -1,26 +1,29 @@
 import { useState, useRef } from "react";
 import { useDispatch } from "react-redux";
-import { setFormPrefill } from "./interactionSlice";
+import { setFormPrefill, refreshList } from "./interactionSlice";
 import { sendChatMessage } from "../services/interactionApi";
+
+const API_URL = "http://localhost:8000";
 
 function ChatAssistant() {
   const dispatch = useDispatch();
   const historyRef = useRef([]);
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      text: "Log interaction details here (e.g., 'Met Dr. Smith, discussed hypertension drug, positive sentiment on 9th July at 11am') or ask for summary, follow-up, or compliance check.",
-    },
-  ]);
+  const [count, setCount] = useState(0);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
   const clearLog = () => {
-    setMessages([{
-      role: "assistant",
-      text: "Log interaction details here (e.g., 'Met Dr. Smith, discussed hypertension drug, positive sentiment on 9th July at 11am') or ask for summary, follow-up, or compliance check.",
-    }]);
     historyRef.current = [];
+    setCount((c) => c + 1);
+  };
+
+  const clearAll = async () => {
+    historyRef.current = [];
+    setCount((c) => c + 1);
+    try {
+      await fetch(`${API_URL}/interactions`, { method: "DELETE" });
+    } catch {}
+    dispatch(refreshList());
   };
 
   const handleSend = async () => {
@@ -28,7 +31,6 @@ function ChatAssistant() {
 
     const userMsg = text;
     setText("");
-    setMessages((prev) => [...prev, { role: "user", text: userMsg }]);
     setLoading(true);
 
     try {
@@ -40,8 +42,6 @@ function ChatAssistant() {
       const assistantReply =
         parsed?.messageToUser || JSON.stringify(parsed || data, null, 2);
 
-      setMessages((prev) => [...prev, { role: "assistant", text: assistantReply }]);
-
       historyRef.current = [
         ...history,
         { role: "user", text: userMsg },
@@ -51,28 +51,39 @@ function ChatAssistant() {
       if (parsed && parsed.hcpName) {
         dispatch(setFormPrefill(parsed));
       }
+      dispatch(refreshList());
     } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: "Error connecting to AI. Make sure the backend is running.",
-        },
-      ]);
+      historyRef.current = [
+        ...historyRef.current,
+        { role: "user", text: userMsg },
+        { role: "assistant", text: "Error connecting to AI. Make sure the backend is running." },
+      ];
     } finally {
       setLoading(false);
     }
   };
 
+  const msgs = historyRef.current;
+  const allMessages = [
+    {
+      role: "assistant",
+      text: "Log interaction details here (e.g., 'Met Dr. Smith, discussed hypertension drug, positive sentiment on 9th July at 11am') or ask for summary, follow-up, or compliance check.",
+    },
+    ...msgs,
+  ];
+
   return (
     <div className="chat-card">
       <div className="chat-header-row">
         <h3>AI Assistant</h3>
-        <button className="clear-btn" onClick={clearLog}>Clear Log</button>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button className="clear-btn" onClick={clearLog} type="button">Clear Chat</button>
+          <button className="clear-all-btn" onClick={clearAll} type="button">Clear All</button>
+        </div>
       </div>
 
       <div className="chat-box">
-        {messages.map((msg, i) => (
+        {allMessages.map((msg, i) => (
           <div key={i} className={`chat-bubble ${msg.role}`}>
             {msg.text}
           </div>

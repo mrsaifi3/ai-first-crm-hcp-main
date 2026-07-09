@@ -164,6 +164,22 @@ form button:disabled {
   background: #fef2f2;
 }
 
+.clear-all-btn {
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: "Inter", sans-serif;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.clear-all-btn:hover {
+  background: #fef2f2;
+}
+
 .chat-card h3 {
   display: flex;
   align-items: center;

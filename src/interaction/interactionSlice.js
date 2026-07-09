@@ -4,6 +4,7 @@ const initialState = {
   mode: "form",
   interactions: [],
   formPrefill: null,
+  listRefresh: 0,
 };
 
 const interactionSlice = createSlice({
@@ -22,10 +23,13 @@ const interactionSlice = createSlice({
     setFormPrefill(state, action) {
       state.formPrefill = action.payload;
     },
+    refreshList(state) {
+      state.listRefresh += 1;
+    },
   },
 });
 
-export const { toggleMode, addInteraction, setFormPrefill } = interactionSlice.actions;
+export const { toggleMode, addInteraction, setFormPrefill, refreshList } = interactionSlice.actions;
 
 // ✅ THIS LINE WAS MISSING OR WRONG BEFORE
 export default interactionSlice.reducer;

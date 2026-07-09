@@ -77,6 +77,15 @@ def create_interaction(data: InteractionResponse):
     return {"success": True, "id": interaction.id}
 
 
+@app.delete("/interactions")
+def delete_all_interactions():
+    db = SessionLocal()
+    db.query(Interaction).delete()
+    db.commit()
+    db.close()
+    return {"success": True, "message": "All interactions deleted"}
+
+
 @app.get("/interactions")
 def get_interactions():
     db = SessionLocal()

@@ -50,7 +50,7 @@ export default function InteractionForm() {
 
       <form onSubmit={handleSubmit}>
         <input name="hcpName" placeholder="HCP Name" value={formData.hcpName} readOnly />
-        <select name="interactionType" value={formData.interactionType} disabled>
+        <select name="interactionType" value={formData.interactionType}>
           <option>Meeting</option>
           <option>Call</option>
           <option>Email</option>
