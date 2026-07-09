@@ -15,6 +15,14 @@ function ChatAssistant() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const clearLog = () => {
+    setMessages([{
+      role: "assistant",
+      text: "Log interaction details here (e.g., 'Met Dr. Smith, discussed hypertension drug, positive sentiment on 9th July at 11am') or ask for summary, follow-up, or compliance check.",
+    }]);
+    historyRef.current = [];
+  };
+
   const handleSend = async () => {
     if (!text.trim() || loading) return;
 
@@ -58,7 +66,10 @@ function ChatAssistant() {
 
   return (
     <div className="chat-card">
-      <h3>AI Assistant</h3>
+      <div className="chat-header-row">
+        <h3>AI Assistant</h3>
+        <button className="clear-btn" onClick={clearLog}>Clear Log</button>
+      </div>
 
       <div className="chat-box">
         {messages.map((msg, i) => (
