@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setFormPrefill } from "./interactionSlice";
 import toast from "react-hot-toast";
-import { submitInteraction } from "../services/interactionApi";
+import { submitInteraction, fetchSuggestions } from "../services/interactionApi";
 import InfoTip from "./InfoTip";
 
 const initialState = {
@@ -42,19 +42,16 @@ const fieldInfo = {
   aiSuggestions: "AI-generated suggestions for follow-up actions based on the interaction",
 };
 
-const suggestedFollowups = [
-  "Schedule follow-up meeting in 2 weeks",
-  "Send OncoBoost Phase III PDF",
-  "Add Dr. Sharma to advisory board invite list",
-];
-
 export default function InteractionForm() {
   const dispatch = useDispatch();
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [showMaterialInput, setShowMaterialInput] = useState(false);
   const [showSampleInput, setShowSampleInput] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const formPrefill = useSelector((state) => state.interaction.formPrefill);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     if (formPrefill) {
@@ -62,6 +59,30 @@ export default function InteractionForm() {
       dispatch(setFormPrefill(null));
     }
   }, [formPrefill, dispatch]);
+
+  const loadSuggestions = useCallback(async (data) => {
+    if (!data.hcpName && !data.topics && !data.outcomes) {
+      setSuggestions([]);
+      return;
+    }
+    setSuggestionsLoading(true);
+    try {
+      const res = await fetchSuggestions(data);
+      setSuggestions(res.suggestions || []);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      loadSuggestions(formData);
+    }, 800);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [formData.hcpName, formData.topics, formData.outcomes, formData.sentiment, loadSuggestions]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -248,7 +269,7 @@ export default function InteractionForm() {
         </div>
 
         <div className="form-group full-width">
-          <label>Follow-up Actions</label>
+          <label>Follow-up Actions <InfoTip title="Follow-up Actions" text={fieldInfo.followupActions} /></label>
           <textarea
             name="followupActions"
             placeholder="Enter next steps or tasks..."
@@ -258,27 +279,33 @@ export default function InteractionForm() {
         </div>
 
         <div className="form-group full-width">
-          <label>AI Suggested Follow-ups</label>
+          <label>AI Suggested Follow-ups <InfoTip title="AI Suggestions" text={fieldInfo.aiSuggestions} /></label>
           <div className="ai-suggestions">
-            {suggestedFollowups.map((text, i) => (
-              <div key={i} className="suggestion-item">
-                <span
-                  className="suggestion-text"
-                  onClick={() => handleAddSuggestion(text)}
-                  title="Click to add"
-                >
-                  {text}
-                </span>
-                <button
-                  type="button"
-                  className="add-suggestion-btn"
-                  onClick={() => handleAddSuggestion(text)}
-                  title="Add to follow-up actions"
-                >
-                  +
-                </button>
-              </div>
-            ))}
+            {suggestionsLoading ? (
+              <div className="suggestions-loading">Generating suggestions...</div>
+            ) : suggestions.length === 0 ? (
+              <div className="suggestions-empty">Fill in HCP name, topics, or outcomes to get AI suggestions.</div>
+            ) : (
+              suggestions.map((text, i) => (
+                <div key={i} className="suggestion-item">
+                  <span
+                    className="suggestion-text"
+                    onClick={() => handleAddSuggestion(text)}
+                    title="Click to add"
+                  >
+                    {text}
+                  </span>
+                  <button
+                    type="button"
+                    className="add-suggestion-btn"
+                    onClick={() => handleAddSuggestion(text)}
+                    title="Add to follow-up actions"
+                  >
+                    +
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

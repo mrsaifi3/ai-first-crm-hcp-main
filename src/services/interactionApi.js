@@ -41,3 +41,19 @@ export async function sendChatMessage(message, history = []) {
 
   return await response.json();
 }
+
+export async function fetchSuggestions(formData) {
+  const response = await fetch(`${API_URL}/suggestions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch suggestions");
+  }
+
+  return await response.json();
+}

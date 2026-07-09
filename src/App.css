@@ -347,6 +347,23 @@ form textarea {
   text-decoration: underline;
 }
 
+.suggestions-loading,
+.suggestions-empty {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #94a3b8;
+  background: #f8fafc;
+  border: 1px dashed #e2e8f0;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.suggestions-loading {
+  color: #2563eb;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
 .add-suggestion-btn {
   width: 28px;
   height: 28px;

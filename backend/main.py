@@ -7,6 +7,7 @@ from backend.agent.graph import agent
 from backend.database import Base, engine
 from backend.models import Interaction
 from backend.database import SessionLocal
+from backend.tools.followup import followup_recommendation_tool
 
 Base.metadata.create_all(bind=engine)
 
@@ -62,6 +63,12 @@ def handle_interaction(request: InteractionRequest):
         "user_input": request.user_input,
         "messages": [m.dict() for m in request.messages] if request.messages else [],
     })
+    return result
+
+
+@app.post("/suggestions")
+def get_suggestions(data: InteractionResponse):
+    result = followup_recommendation_tool(data.dict())
     return result
 
 
