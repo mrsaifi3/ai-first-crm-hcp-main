@@ -50,6 +50,7 @@ def log_interaction_tool(user_text: str, history: list = None):
     interaction = Interaction(
         hcp_name=hcp_name,
         specialty=specialty,
+        interaction_type=interaction_type,
         product=product,
         summary=summary,
         sentiment=sentiment,

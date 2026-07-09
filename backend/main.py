@@ -65,10 +65,9 @@ def create_interaction(data: InteractionResponse):
     db = SessionLocal()
     interaction = Interaction(
         hcp_name=data.hcpName,
-        specialty="",
+        interaction_type=data.interactionType,
         product=data.product,
         summary=data.summary,
-        sentiment=""
     )
     db.add(interaction)
     db.commit()
@@ -96,6 +95,7 @@ def get_interactions():
             "id": r.id,
             "hcpName": r.hcp_name,
             "specialty": r.specialty,
+            "interactionType": r.interaction_type,
             "product": r.product,
             "summary": r.summary,
             "sentiment": r.sentiment,

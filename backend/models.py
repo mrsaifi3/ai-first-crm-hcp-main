@@ -10,6 +10,7 @@ class Interaction(Base):
     id = Column(Integer, primary_key=True, index=True)
     hcp_name = Column(String, nullable=False)
     specialty = Column(String)
+    interaction_type = Column(String, default="Meeting")
     product = Column(String)
     summary = Column(String)
     sentiment = Column(String)

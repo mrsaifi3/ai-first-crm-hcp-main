@@ -4,6 +4,15 @@ from backend.database import SessionLocal
 from backend.models import Interaction
 
 
+FIELD_MAP = {
+    "hcpName": "hcp_name",
+    "specialty": "specialty",
+    "interactionType": "interaction_type",
+    "product": "product",
+    "summary": "summary",
+    "sentiment": "sentiment",
+}
+
 EDIT_PROMPT = """
 You are a healthcare CRM assistant. The user wants to CORRECT a previously logged HCP interaction.
 Based on the conversation history and the latest correction, extract ONLY the fields that need to be UPDATED.
@@ -45,19 +54,16 @@ def edit_interaction_tool(user_text: str, history: list = None):
         }
 
     changed = list(parsed.keys())
-    hcp_name = parsed.get("hcpName", "")
-    summary = parsed.get("summary", "")
 
-    if hcp_name or summary:
-        db = SessionLocal()
-        latest = db.query(Interaction).order_by(Interaction.id.desc()).first()
-        if latest:
-            if hcp_name:
-                latest.hcp_name = hcp_name
-            if summary:
-                latest.summary = summary
-            db.commit()
-        db.close()
+    db = SessionLocal()
+    latest = db.query(Interaction).order_by(Interaction.id.desc()).first()
+
+    if latest:
+        for frontend_key, db_col in FIELD_MAP.items():
+            if frontend_key in parsed and parsed[frontend_key]:
+                setattr(latest, db_col, parsed[frontend_key])
+        db.commit()
+    db.close()
 
     return {
         "status": "updated",
