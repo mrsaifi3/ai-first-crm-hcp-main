@@ -1,76 +1,49 @@
-# AI-First CRM – HCP Interaction Module (Frontend)
+# AI-First CRM – HCP Interaction Module
 
-## 📌 Overview
+## Overview
 
-This repository contains the **frontend application** for an **AI-First CRM system** designed to log, manage, and analyze Healthcare Professional (HCP) interactions.
+AI-first CRM for Healthcare Professionals (HCP). Log, manage, and analyze HCP interactions via structured form or conversational AI chat.
 
-The frontend provides:
-- A structured interaction logging form
-- An AI-powered assistant for natural language input
-- Automatic form population using AI
-- A clean, professional dashboard UI
+Built with React + Redux (frontend) and FastAPI + LangGraph + Groq LLM (backend).
 
-It is built with **React + Vite** and communicates with the backend via standard REST APIs.
+## Tech Stack
 
----
+- **Frontend:** React, Redux Toolkit, Vite, Google Inter font
+- **Backend:** Python, FastAPI, LangGraph, Groq (gemma2-9b-it)
+- **Database:** SQLite (dev) / PostgreSQL (prod)
+- **State Management:** Redux Toolkit
 
-## 🎯 Objectives (Task 1 Alignment)
+## LangGraph Agent Tools
 
-The frontend demonstrates:
-- Human-friendly interaction logging
-- AI-assisted workflows
-- Clear separation of UI, logic, and API layers
-- Seamless integration with an AI-powered backend (LangGraph + FastAPI)
+1. **Log Interaction** – Logs HCP interactions using LLM for summarization & entity extraction
+2. **Edit Interaction** – Modifies existing logged interactions
+3. **Summarize** – Summarizes all logged interactions
+4. **Follow-up Recommendation** – Suggests follow-up actions
+5. **Compliance Check** – Validates interactions for compliance issues
 
-This satisfies **Task 1 frontend requirements** of the assignment.
+## Setup
 
----
+### Backend
 
-## ✨ Key Features
+```bash
+cd backend
+pip install -r requirements.txt
+set GROQ_API_KEY=gsk_your_key_here
+uvicorn backend.main:app --reload --port 8000
+```
 
-### 1️⃣ HCP Interaction Form
-Users can log the following details:
-- HCP Name  
-- Interaction Type (Meeting, Call, etc.)
-- Date & Time  
-- Attendees  
-- Topics Discussed  
-- Product / Material Shared  
-- Summary / Notes  
+### Frontend
 
-### 2️⃣ AI Assistant Panel
-- Users describe interactions in natural language
-- AI parses the description
-- Relevant fields are auto-filled in the form
-- Reduces manual data entry
+```bash
+npm install
+npm run dev
+```
 
-### 3️⃣ Dual Input Modes
-- **Form Mode** – Manual structured input
-- **AI Mode** – Conversational AI-assisted input
+Open http://localhost:5173
 
-### 4️⃣ Clean Dashboard UI
-- Card-based layout
-- Proper spacing & hierarchy
-- Responsive design
-- Submission-ready professional look
+## Features
 
----
-
-## 🧠 AI Auto-Fill Mechanism
-
-The AI assistant emits structured data using a browser event:
-
-```js
-window.dispatchEvent(
-  new CustomEvent("ai-fill-form", {
-    detail: {
-      hcpName,
-      interactionType,
-      summary,
-      attendees,
-      productsShared
-    }
-  })
-);
-
-
+- Dual input modes: Form mode & AI Chat mode
+- AI auto-fills form fields from natural language
+- LangGraph agent routes intents (log, edit, summary, follow-up, compliance)
+- Responsive dashboard UI

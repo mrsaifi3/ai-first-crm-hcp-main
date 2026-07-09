@@ -1,6 +1,7 @@
 from backend.database import SessionLocal
 from backend.models import Interaction
 
+
 def edit_interaction_tool(interaction_id: int, new_summary: str):
     db = SessionLocal()
     interaction = db.query(Interaction).filter(

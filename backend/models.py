@@ -3,6 +3,7 @@ from datetime import datetime
 
 from backend.database import Base
 
+
 class Interaction(Base):
     __tablename__ = "interactions"
 

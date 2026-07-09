@@ -2,9 +2,19 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="AI-First CRM HCP")
+from backend.agent.graph import agent
+from backend.database import Base, engine
+from backend.models import Interaction
+from backend.database import SessionLocal
 
-# ✅ CORS — RIGHT HERE
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="AI-First CRM – HCP Module",
+    description="Log HCP interactions using LangGraph + LLM",
+    version="1.0.0"
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,19 +23,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---- AI / CHAT MODELS ----
-class ChatInput(BaseModel):
-    message: str
 
-@app.post("/interaction/chat")
-def chat_interaction(data: ChatInput):
-    return {
-        "status": "received",
-        "message": data.message
-    }
+class InteractionRequest(BaseModel):
+    user_input: str
 
-# ---- INTERACTION APIs ----
-class Interaction(BaseModel):
+
+class InteractionResponse(BaseModel):
     hcpName: str
     interactionType: str
     date: str
@@ -35,13 +38,51 @@ class Interaction(BaseModel):
     product: str
     summary: str
 
-interactions = []
+
+@app.get("/")
+def health_check():
+    return {"status": "API is running"}
+
+
+@app.post("/interaction")
+def handle_interaction(request: InteractionRequest):
+    result = agent.invoke({
+        "user_input": request.user_input
+    })
+    return result
+
 
 @app.post("/interactions")
-def create_interaction(data: Interaction):
-    interactions.append(data)
-    return {"success": True, "data": data}
+def create_interaction(data: InteractionResponse):
+    db = SessionLocal()
+    interaction = Interaction(
+        hcp_name=data.hcpName,
+        specialty="",
+        product=data.product,
+        summary=data.summary,
+        sentiment=""
+    )
+    db.add(interaction)
+    db.commit()
+    db.refresh(interaction)
+    db.close()
+    return {"success": True, "id": interaction.id}
+
 
 @app.get("/interactions")
 def get_interactions():
-    return interactions
+    db = SessionLocal()
+    rows = db.query(Interaction).all()
+    db.close()
+    return [
+        {
+            "id": r.id,
+            "hcpName": r.hcp_name,
+            "specialty": r.specialty,
+            "product": r.product,
+            "summary": r.summary,
+            "sentiment": r.sentiment,
+            "created_at": str(r.created_at)
+        }
+        for r in rows
+    ]

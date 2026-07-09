@@ -1,38 +1,58 @@
 * {
   box-sizing: border-box;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
 }
 
 body {
   margin: 0;
   background: linear-gradient(135deg, #f4f7fb, #eef2ff);
   color: #111827;
+  min-height: 100vh;
 }
 
-/* App Layout */
 .app-container {
   padding: 32px;
+  max-width: 1280px;
+  margin: 0 auto;
 }
 
 .header {
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.header p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
 }
 
 .switch-btn {
   background: #2563eb;
   color: white;
   border: none;
-  padding: 10px 16px;
+  padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
+  font-size: 14px;
+  font-family: "Inter", sans-serif;
 }
 
 .switch-btn:hover {
   background: #1d4ed8;
 }
 
-/* Main Grid */
 .dashboard {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -40,9 +60,9 @@ body {
   margin-top: 20px;
 }
 
-/* Cards */
 .form-card,
-.chat-card {
+.chat-card,
+.list-card {
   background: white;
   border-radius: 14px;
   padding: 24px;
@@ -61,9 +81,11 @@ body {
   }
 }
 
-/* Form */
-.form-card h2 {
+.form-card h2,
+.list-card h2 {
   margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 form {
@@ -72,24 +94,30 @@ form {
   gap: 14px;
 }
 
-form label {
-  grid-column: span 2;
-  font-size: 14px;
-  font-weight: 600;
-}
-
 form input,
 form select,
 form textarea {
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   font-size: 14px;
+  font-family: "Inter", sans-serif;
+  background: #fff;
+  color: #111827;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 form textarea {
   grid-column: span 2;
   min-height: 80px;
+  resize: vertical;
 }
 
 form button {
@@ -101,6 +129,8 @@ form button {
   padding: 12px;
   border-radius: 10px;
   font-weight: 600;
+  font-size: 15px;
+  font-family: "Inter", sans-serif;
   cursor: pointer;
 }
 
@@ -108,19 +138,47 @@ form button:hover {
   background: #15803d;
 }
 
-/* Chat */
+form button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
 .chat-card h3 {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.chat-box {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .chat-bubble {
-  background: #eef2ff;
-  padding: 14px;
+  padding: 12px 14px;
   border-radius: 12px;
   font-size: 14px;
-  margin-bottom: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.chat-bubble.assistant {
+  background: #eef2ff;
+  align-self: flex-start;
+}
+
+.chat-bubble.user {
+  background: #2563eb;
+  color: white;
+  align-self: flex-end;
 }
 
 .chat-input {
@@ -130,15 +188,82 @@ form button:hover {
 
 .chat-input input {
   flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  font-family: "Inter", sans-serif;
+  background: #fff;
+  color: #111827;
+}
+
+.chat-input input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .chat-input button {
   background: #2563eb;
   color: white;
   border: none;
-  padding: 10px 14px;
+  padding: 10px 18px;
   border-radius: 8px;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
   cursor: pointer;
 }
 
+.chat-input button:hover {
+  background: #1d4ed8;
+}
 
+.chat-input button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.list-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.list-card li {
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.list-card li:last-child {
+  border-bottom: none;
+}
+
+.list-card li strong {
+  font-size: 14px;
+}
+
+.list-card li small {
+  display: block;
+  color: #6b7280;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  form {
+    grid-template-columns: 1fr;
+  }
+
+  form textarea,
+  form button {
+    grid-column: span 1;
+  }
+
+  .app-container {
+    padding: 16px;
+  }
+}
