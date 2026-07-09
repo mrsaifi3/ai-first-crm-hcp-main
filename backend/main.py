@@ -8,6 +8,7 @@ from backend.database import Base, engine
 from backend.models import Interaction
 from backend.database import SessionLocal
 from backend.tools.followup import followup_recommendation_tool
+from backend.tools.check_form import check_form_tool
 
 Base.metadata.create_all(bind=engine)
 
@@ -69,6 +70,12 @@ def handle_interaction(request: InteractionRequest):
 @app.post("/suggestions")
 def get_suggestions(data: InteractionResponse):
     result = followup_recommendation_tool(data.dict())
+    return result
+
+
+@app.post("/check-form")
+def check_form(data: InteractionResponse):
+    result = check_form_tool(data.dict())
     return result
 
 

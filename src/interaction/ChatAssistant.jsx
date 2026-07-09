@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setFormPrefill, refreshList } from "./interactionSlice";
-import { sendChatMessage } from "../services/interactionApi";
+import { sendChatMessage, checkForm } from "../services/interactionApi";
 
 const API_URL = "http://localhost:8000";
 
@@ -13,6 +13,7 @@ function ChatAssistant() {
   const [count, setCount] = useState(0);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(false);
   const chatEndRef = useRef(null);
 
   const msgs = historyRef.current;
@@ -34,6 +35,26 @@ function ChatAssistant() {
       await fetch(`${API_URL}/interactions`, { method: "DELETE" });
     } catch {}
     dispatch(refreshList());
+  };
+
+  const addAssistantMessage = (text) => {
+    historyRef.current = [...historyRef.current, { role: "assistant", text }];
+    setCount((c) => c + 1);
+  };
+
+  const handleCheckForm = async (formData) => {
+    if (checking || !formData?.hcpName) return;
+    setChecking(true);
+    try {
+      const res = await checkForm(formData);
+      if (res?.messageToUser) {
+        addAssistantMessage(res.messageToUser);
+      }
+    } catch {
+      // silent
+    } finally {
+      setChecking(false);
+    }
   };
 
   const handleSend = async () => {
@@ -60,6 +81,8 @@ function ChatAssistant() {
 
       if (parsed && parsed.hcpName && (parsed.status === "logged" || parsed.status === "updated")) {
         dispatch(setFormPrefill(parsed));
+        // auto-check form for missing fields after a short delay
+        setTimeout(() => handleCheckForm(parsed), 600);
       }
       dispatch(refreshList());
     } catch (err) {
