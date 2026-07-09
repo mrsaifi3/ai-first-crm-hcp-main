@@ -1,0 +1,15 @@
+{
+  "interactions": [
+    {
+      "hcpName": "Dr sharma",
+      "interactionType": "Meeting",
+      "date": "2026-01-18",
+      "time": "11:30",
+      "attendees": "",
+      "topics": "",
+      "product": "",
+      "summary": "Discussed hypertension drug",
+      "id": 1
+    }
+  ]
+}

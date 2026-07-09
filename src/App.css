@@ -1,0 +1,144 @@
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #f4f7fb, #eef2ff);
+  color: #111827;
+}
+
+/* App Layout */
+.app-container {
+  padding: 32px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.switch-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.switch-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Main Grid */
+.dashboard {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+/* Cards */
+.form-card,
+.chat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Form */
+.form-card h2 {
+  margin-bottom: 16px;
+}
+
+form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+form label {
+  grid-column: span 2;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+form input,
+form select,
+form textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+form textarea {
+  grid-column: span 2;
+  min-height: 80px;
+}
+
+form button {
+  grid-column: span 2;
+  margin-top: 10px;
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+form button:hover {
+  background: #15803d;
+}
+
+/* Chat */
+.chat-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-bubble {
+  background: #eef2ff;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.chat-input {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input input {
+  flex: 1;
+}
+
+.chat-input button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+
