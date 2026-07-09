@@ -13,7 +13,7 @@ def detect_intent(state: AgentState) -> AgentState:
 
     if "edit" in text:
         state["intent"] = "edit"
-    elif "summary" in text:
+    elif "summary" in text or "count" in text or "how many" in text:
         state["intent"] = "summary"
     elif "follow" in text:
         state["intent"] = "followup"
@@ -26,7 +26,10 @@ def detect_intent(state: AgentState) -> AgentState:
 
 
 def log_node(state: AgentState) -> AgentState:
-    state["result"] = log_interaction_tool(state["user_input"])
+    state["result"] = log_interaction_tool(
+        state["user_input"],
+        history=state.get("messages", [])
+    )
     return state
 
 

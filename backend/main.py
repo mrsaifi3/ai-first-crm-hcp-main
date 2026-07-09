@@ -1,3 +1,4 @@
+from typing import List, Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,8 +25,14 @@ app.add_middleware(
 )
 
 
+class ChatMessage(BaseModel):
+    role: str
+    text: str
+
+
 class InteractionRequest(BaseModel):
     user_input: str
+    messages: Optional[List[ChatMessage]] = []
 
 
 class InteractionResponse(BaseModel):
@@ -47,7 +54,8 @@ def health_check():
 @app.post("/interaction")
 def handle_interaction(request: InteractionRequest):
     result = agent.invoke({
-        "user_input": request.user_input
+        "user_input": request.user_input,
+        "messages": [m.dict() for m in request.messages] if request.messages else [],
     })
     return result
 

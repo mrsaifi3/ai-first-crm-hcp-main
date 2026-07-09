@@ -26,13 +26,13 @@ export async function fetchInteractions() {
   return await response.json();
 }
 
-export async function sendChatMessage(message) {
+export async function sendChatMessage(message, history = []) {
   const response = await fetch(`${API_URL}/interaction`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ user_input: message }),
+    body: JSON.stringify({ user_input: message, messages: history }),
   });
 
   if (!response.ok) {

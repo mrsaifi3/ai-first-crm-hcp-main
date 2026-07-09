@@ -1,17 +1,56 @@
+import json
 from backend.llm.groq_client import call_llm
 from backend.database import SessionLocal
 from backend.models import Interaction
 
 
-def log_interaction_tool(user_text: str):
-    summary = call_llm(user_text)
+EXTRACTION_PROMPT = """
+Based on the conversation so far and the latest user input, extract structured fields from the HCP interaction.
+Return ONLY valid JSON with these fields:
+- hcpName (string, the doctor's name)
+- specialty (string, medical specialty)
+- interactionType (string: Meeting/Call/Email)
+- date (string, date in YYYY-MM-DD format)
+- attendees (string, comma-separated)
+- topics (string, topics discussed)
+- product (string, product or material shared)
+- summary (string, brief summary)
+- sentiment (string: Positive/Neutral/Negative)
+
+Latest input: {text}
+"""
+
+
+def log_interaction_tool(user_text: str, history: list = None):
+    prompt = EXTRACTION_PROMPT.format(text=user_text)
+    raw = call_llm(prompt, history=history)
+
+    parsed = {}
+    try:
+        cleaned = raw.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.split("\n", 1)[1]
+            cleaned = cleaned.rsplit("```", 1)[0]
+        parsed = json.loads(cleaned.strip())
+    except json.JSONDecodeError:
+        parsed = {"summary": raw, "hcpName": "Unknown"}
+
+    hcp_name = parsed.get("hcpName", "Unknown")
+    specialty = parsed.get("specialty", "")
+    product = parsed.get("product", "")
+    summary = parsed.get("summary", raw)
+    sentiment = parsed.get("sentiment", "Neutral")
+    interaction_type = parsed.get("interactionType", "Meeting")
+    date = parsed.get("date", "")
+    attendees = parsed.get("attendees", "")
+    topics = parsed.get("topics", "")
 
     interaction = Interaction(
-        hcp_name="Dr. Sharma",
-        specialty="Cardiology",
-        product="Hypertension Drug",
+        hcp_name=hcp_name,
+        specialty=specialty,
+        product=product,
         summary=summary,
-        sentiment="Positive"
+        sentiment=sentiment,
     )
 
     db = SessionLocal()
@@ -22,5 +61,15 @@ def log_interaction_tool(user_text: str):
 
     return {
         "status": "logged",
-        "interaction_id": interaction.id
+        "interaction_id": interaction.id,
+        "hcpName": hcp_name,
+        "specialty": specialty,
+        "product": product,
+        "summary": summary,
+        "sentiment": sentiment,
+        "interactionType": interaction_type,
+        "date": date,
+        "attendees": attendees,
+        "topics": topics,
+        "messageToUser": f"Logged interaction with {hcp_name} ({interaction_type}, {date}). Summary: {summary}",
     }

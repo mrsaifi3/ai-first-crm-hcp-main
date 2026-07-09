@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useDispatch } from "react-redux";
+import { setFormPrefill } from "./interactionSlice";
 import { sendChatMessage } from "../services/interactionApi";
 
 function ChatAssistant() {
+  const dispatch = useDispatch();
+  const historyRef = useRef([]);
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -20,27 +24,25 @@ function ChatAssistant() {
     setLoading(true);
 
     try {
-      const data = await sendChatMessage(userMsg);
+      const history = historyRef.current;
+      const data = await sendChatMessage(userMsg, history);
 
+      const result = data?.result;
+      const parsed = typeof result === "string" ? JSON.parse(result) : result;
       const assistantReply =
-        data?.result || JSON.stringify(data, null, 2);
+        parsed?.messageToUser || JSON.stringify(parsed || data, null, 2);
 
-      setMessages((prev) => [
-        ...prev,
+      setMessages((prev) => [...prev, { role: "assistant", text: assistantReply }]);
+
+      historyRef.current = [
+        ...history,
+        { role: "user", text: userMsg },
         { role: "assistant", text: assistantReply },
-      ]);
+      ];
 
-      try {
-        const parsed =
-          typeof data?.result === "string"
-            ? JSON.parse(data.result)
-            : data?.result;
-        if (parsed && parsed.hcpName) {
-          window.dispatchEvent(
-            new CustomEvent("ai-fill-form", { detail: parsed })
-          );
-        }
-      } catch (_) {}
+      if (parsed && parsed.hcpName) {
+        dispatch(setFormPrefill(parsed));
+      }
     } catch (err) {
       setMessages((prev) => [
         ...prev,

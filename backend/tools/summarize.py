@@ -6,4 +6,8 @@ def summarize_interactions_tool():
     db = SessionLocal()
     count = db.query(Interaction).count()
     db.close()
-    return f"Total interactions logged: {count}"
+    return {
+        "status": "ok",
+        "total_interactions": count,
+        "messageToUser": f"Total interactions logged: {count}",
+    }

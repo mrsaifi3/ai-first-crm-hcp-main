@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   mode: "form",
   interactions: [],
+  formPrefill: null,
 };
 
 const interactionSlice = createSlice({
@@ -18,10 +19,13 @@ const interactionSlice = createSlice({
         ...action.payload,
       });
     },
+    setFormPrefill(state, action) {
+      state.formPrefill = action.payload;
+    },
   },
 });
 
-export const { toggleMode, addInteraction } = interactionSlice.actions;
+export const { toggleMode, addInteraction, setFormPrefill } = interactionSlice.actions;
 
 // ✅ THIS LINE WAS MISSING OR WRONG BEFORE
 export default interactionSlice.reducer;

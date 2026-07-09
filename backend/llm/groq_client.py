@@ -9,21 +9,26 @@ def get_groq_client():
     return Groq(api_key=api_key)
 
 
-def call_llm(prompt: str) -> str:
+def call_llm(prompt: str, history: list = None) -> str:
     client = get_groq_client()
 
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a healthcare CRM assistant for logging HCP interactions."
+        }
+    ]
+
+    if history:
+        for msg in history:
+            role = "user" if msg.get("role") == "user" else "assistant"
+            messages.append({"role": role, "content": msg.get("text", "")})
+
+    messages.append({"role": "user", "content": prompt})
+
     response = client.chat.completions.create(
-        model="gemma2-9b-it",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a healthcare CRM assistant."
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
+        model="llama-3.3-70b-versatile",
+        messages=messages,
         temperature=0.3
     )
 

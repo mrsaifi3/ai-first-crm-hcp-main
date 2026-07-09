@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { setFormPrefill } from "./interactionSlice";
 import toast from "react-hot-toast";
 import { submitInteraction } from "../services/interactionApi";
 
@@ -14,17 +16,17 @@ const initialState = {
 };
 
 export default function InteractionForm() {
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
+  const formPrefill = useSelector((state) => state.interaction.formPrefill);
 
-  // AI auto-fill
   useEffect(() => {
-    const handler = (e) => {
-      setFormData((prev) => ({ ...prev, ...e.detail }));
-    };
-    window.addEventListener("ai-fill-form", handler);
-    return () => window.removeEventListener("ai-fill-form", handler);
-  }, []);
+    if (formPrefill) {
+      setFormData((prev) => ({ ...prev, ...formPrefill }));
+      dispatch(setFormPrefill(null));
+    }
+  }, [formPrefill, dispatch]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -9,7 +9,11 @@ def edit_interaction_tool(interaction_id: int, new_summary: str):
     ).first()
 
     if not interaction:
-        return {"error": "Interaction not found"}
+        return {
+            "status": "error",
+            "error": "Interaction not found",
+            "messageToUser": f"Interaction #{interaction_id} not found.",
+        }
 
     interaction.summary = new_summary
     db.commit()
@@ -17,5 +21,6 @@ def edit_interaction_tool(interaction_id: int, new_summary: str):
 
     return {
         "status": "updated",
-        "interaction_id": interaction_id
+        "interaction_id": interaction_id,
+        "messageToUser": f"Interaction #{interaction_id} has been updated successfully.",
     }
