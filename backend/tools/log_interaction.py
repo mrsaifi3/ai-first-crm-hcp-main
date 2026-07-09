@@ -11,6 +11,7 @@ Return ONLY valid JSON with these fields:
 - specialty (string, medical specialty)
 - interactionType (string: Meeting/Call/Email)
 - date (string, date in YYYY-MM-DD format)
+- time (string, time in HH:MM format)
 - attendees (string, comma-separated)
 - topics (string, topics discussed)
 - product (string, product or material shared)
@@ -42,6 +43,7 @@ def log_interaction_tool(user_text: str, history: list = None):
     sentiment = parsed.get("sentiment", "Neutral")
     interaction_type = parsed.get("interactionType", "Meeting")
     date = parsed.get("date", "")
+    time = parsed.get("time", "")
     attendees = parsed.get("attendees", "")
     topics = parsed.get("topics", "")
 
@@ -69,6 +71,7 @@ def log_interaction_tool(user_text: str, history: list = None):
         "sentiment": sentiment,
         "interactionType": interaction_type,
         "date": date,
+        "time": time,
         "attendees": attendees,
         "topics": topics,
         "messageToUser": f"Logged interaction with {hcp_name} ({interaction_type}, {date}). Summary: {summary}",
