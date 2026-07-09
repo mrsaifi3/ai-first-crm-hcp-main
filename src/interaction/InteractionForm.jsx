@@ -56,15 +56,22 @@ export default function InteractionForm() {
   const formDataRef = useRef(formData);
   formDataRef.current = formData;
 
-  const loadSuggestions = useCallback(async (data) => {
-    if (!data.hcpName && !data.topics && !data.outcomes) {
-      setSuggestions([]);
-      return;
+  useEffect(() => {
+    if (formPrefill) {
+      setFormData((prev) => ({ ...prev, ...formPrefill }));
+      dispatch(setFormPrefill(null));
     }
+  }, [formPrefill, dispatch]);
+
+  const loadSuggestions = useCallback(async (data) => {
     setSuggestionsLoading(true);
     try {
       const res = await fetchSuggestions(data);
-      setSuggestions(res.suggestions || []);
+      if (res?.suggestions?.length) {
+        setSuggestions(res.suggestions);
+      } else {
+        setSuggestions([]);
+      }
     } catch {
       setSuggestions([]);
     } finally {
@@ -73,28 +80,16 @@ export default function InteractionForm() {
   }, []);
 
   useEffect(() => {
+    if (!formData.hcpName && !formData.topics && !formData.outcomes) {
+      setSuggestions([]);
+      return;
+    }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       loadSuggestions(formDataRef.current);
     }, 800);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [formData.hcpName, formData.topics, formData.outcomes, formData.sentiment, loadSuggestions]);
-
-  useEffect(() => {
-    if (formPrefill) {
-      setFormData((prev) => ({ ...prev, ...formPrefill }));
-      dispatch(setFormPrefill(null));
-    }
-  }, [formPrefill, dispatch]);
-
-  useEffect(() => {
-    if (formData.hcpName || formData.topics || formData.outcomes) {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        loadSuggestions(formDataRef.current);
-      }, 400);
-    }
-  }, [formPrefill]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -70,8 +70,17 @@ function ChatAssistant() {
 
       const result = data?.result;
       const parsed = typeof result === "string" ? JSON.parse(result) : result;
-      const assistantReply =
+      let assistantReply =
         parsed?.messageToUser || JSON.stringify(parsed || data, null, 2);
+      // Always end with a question to keep conversation flowing
+      if (!assistantReply.trim().endsWith("?") && !assistantReply.trim().endsWith("؟")) {
+        const fallbacks = [
+          " Is there anything else to add?",
+          " Any other details?",
+          " What else can I help with?",
+        ];
+        assistantReply += fallbacks[Math.floor(Math.random() * fallbacks.length)];
+      }
 
       historyRef.current = [
         ...history,
