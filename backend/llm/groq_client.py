@@ -26,10 +26,21 @@ def call_llm(prompt: str, history: list = None) -> str:
 
     messages.append({"role": "user", "content": prompt})
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=messages,
-        temperature=0.7
-    )
-
-    return response.choices[0].message.content
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temperature=0.7
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        err_str = str(e).lower()
+        if "rate limit" in err_str or "rate_limit" in err_str:
+            raise RuntimeError("Groq API rate limit exceeded. Please wait a moment and try again.")
+        if "quota" in err_str or "exhausted" in err_str:
+            raise RuntimeError("Groq API quota exhausted. Check your plan or API key.")
+        if "api key" in err_str or "unauthorized" in err_str or "auth" in err_str:
+            raise RuntimeError("Invalid Groq API key. Check your GROQ_API_KEY.")
+        if "timeout" in err_str:
+            raise RuntimeError("Groq API timed out. Please try again.")
+        raise RuntimeError(f"Groq API error: {str(e)[:200]}")

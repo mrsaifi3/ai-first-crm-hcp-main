@@ -67,7 +67,10 @@ export default function InteractionForm() {
     setSuggestionsLoading(true);
     try {
       const res = await fetchSuggestions(data);
-      if (res?.suggestions?.length) {
+      if (res?.status === "error" && res?.messageToUser) {
+        toast.error(res.messageToUser);
+        setSuggestions([]);
+      } else if (res?.suggestions?.length) {
         setSuggestions(res.suggestions);
       } else {
         setSuggestions([]);

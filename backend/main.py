@@ -60,23 +60,48 @@ def health_check():
 
 @app.post("/interaction")
 def handle_interaction(request: InteractionRequest):
-    result = agent.invoke({
-        "user_input": request.user_input,
-        "messages": [m.dict() for m in request.messages] if request.messages else [],
-    })
-    return result
+    try:
+        result = agent.invoke({
+            "user_input": request.user_input,
+            "messages": [m.dict() for m in request.messages] if request.messages else [],
+        })
+        return result
+    except RuntimeError as e:
+        return {
+            "status": "error",
+            "messageToUser": str(e),
+            "hcpName": "",
+            "result": {"status": "error", "messageToUser": str(e)},
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "messageToUser": f"Something went wrong: {str(e)[:200]}",
+            "hcpName": "",
+            "result": {"status": "error", "messageToUser": f"Something went wrong: {str(e)[:200]}"},
+        }
 
 
 @app.post("/suggestions")
 def get_suggestions(data: InteractionResponse):
-    result = followup_recommendation_tool(data.dict())
-    return result
+    try:
+        result = followup_recommendation_tool(data.dict())
+        return result
+    except RuntimeError as e:
+        return {"status": "error", "suggestions": [], "messageToUser": str(e)}
+    except Exception as e:
+        return {"status": "error", "suggestions": [], "messageToUser": f"Something went wrong: {str(e)[:200]}"}
 
 
 @app.post("/check-form")
 def check_form(data: InteractionResponse):
-    result = check_form_tool(data.dict())
-    return result
+    try:
+        result = check_form_tool(data.dict())
+        return result
+    except RuntimeError as e:
+        return {"status": "error", "messageToUser": str(e), "isComplete": False}
+    except Exception as e:
+        return {"status": "error", "messageToUser": f"Something went wrong: {str(e)[:200]}", "isComplete": False}
 
 
 @app.post("/interactions")

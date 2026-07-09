@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setFormPrefill, refreshList } from "./interactionSlice";
 import { sendChatMessage, checkForm } from "../services/interactionApi";
+import toast from "react-hot-toast";
 
 const API_URL = "http://localhost:8000";
 
@@ -74,6 +75,11 @@ function ChatAssistant() {
         try { parsed = JSON.parse(parsed); } catch { parsed = {}; }
       }
 
+      // Show error toast if Groq failed
+      if (parsed?.status === "error" && parsed?.messageToUser) {
+        toast.error(parsed.messageToUser);
+      }
+
       let assistantReply =
         parsed?.messageToUser || JSON.stringify(parsed || data, null, 2);
       if (!assistantReply.trim().endsWith("?") && !assistantReply.trim().endsWith("؟")) {
@@ -91,11 +97,30 @@ function ChatAssistant() {
         { role: "assistant", text: assistantReply },
       ];
 
-      // Prefill form with any fields we can find
-      const fillData = parsed && parsed.hcpName ? parsed : (data?.hcpName ? data : null);
-      if (fillData && fillData.hcpName) {
-        dispatch(setFormPrefill(fillData));
-        setTimeout(() => handleCheckForm(fillData), 600);
+      // Prefill form — try every possible path to find HCP data
+      const extract = (obj) =>
+        obj && typeof obj === "object" ? obj : {};
+      const toolResult = extract(data?.result);
+      const topLevel = extract(data);
+
+      // Pick the object that has hcpName
+      const best =
+        toolResult.hcpName || toolResult.hcp_name
+          ? toolResult
+          : topLevel.hcpName || topLevel.hcp_name
+          ? topLevel
+          : null;
+
+      if (best) {
+        const prefill = { ...best };
+        if (best.hcp_name && !best.hcpName) prefill.hcpName = best.hcp_name;
+        console.log("Dispatching formPrefill:", JSON.stringify(prefill).slice(0, 300));
+        dispatch(setFormPrefill(prefill));
+        toast.success("Form updated: " + (prefill.hcpName || "?"));
+        setTimeout(() => handleCheckForm(prefill), 600);
+      } else {
+        console.log("No HCP data found in response:", JSON.stringify(data).slice(0, 500));
+        toast.error("Could not extract HCP data from response");
       }
       dispatch(refreshList());
     } catch (err) {
