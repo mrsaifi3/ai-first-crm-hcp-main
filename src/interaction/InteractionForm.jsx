@@ -28,11 +28,6 @@ export default function InteractionForm() {
     }
   }, [formPrefill, dispatch]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -51,20 +46,21 @@ export default function InteractionForm() {
   return (
     <div className="form-card">
       <h2>Log HCP Interaction</h2>
+      <p className="form-hint">Fields are auto-filled by AI Assistant. Use the chat panel to fill or edit.</p>
 
       <form onSubmit={handleSubmit}>
-        <input name="hcpName" placeholder="HCP Name" value={formData.hcpName} onChange={handleChange} />
-        <select name="interactionType" value={formData.interactionType} onChange={handleChange}>
+        <input name="hcpName" placeholder="HCP Name" value={formData.hcpName} readOnly />
+        <select name="interactionType" value={formData.interactionType} disabled>
           <option>Meeting</option>
           <option>Call</option>
           <option>Email</option>
         </select>
-        <input type="date" name="date" value={formData.date} onChange={handleChange} />
-        <input type="time" name="time" value={formData.time} onChange={handleChange} />
-        <input name="attendees" placeholder="Attendees" value={formData.attendees} onChange={handleChange} />
-        <input name="topics" placeholder="Topics discussed" value={formData.topics} onChange={handleChange} />
-        <input name="product" placeholder="Product / Material shared" value={formData.product} onChange={handleChange} />
-        <textarea name="summary" placeholder="Summary / Notes" value={formData.summary} onChange={handleChange} />
+        <input type="date" name="date" value={formData.date} readOnly />
+        <input type="time" name="time" value={formData.time} readOnly />
+        <input name="attendees" placeholder="Attendees" value={formData.attendees} readOnly />
+        <input name="topics" placeholder="Topics discussed" value={formData.topics} readOnly />
+        <input name="product" placeholder="Product / Material shared" value={formData.product} readOnly />
+        <textarea name="summary" placeholder="Summary / Notes" value={formData.summary} readOnly />
 
         <button type="submit" disabled={loading}>
           {loading ? "Saving..." : "Submit Interaction"}
@@ -73,9 +69,3 @@ export default function InteractionForm() {
     </div>
   );
 }
-
-
-
-
-
-

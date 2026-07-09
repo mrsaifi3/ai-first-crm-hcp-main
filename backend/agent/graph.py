@@ -35,8 +35,8 @@ def log_node(state: AgentState) -> AgentState:
 
 def edit_node(state: AgentState) -> AgentState:
     state["result"] = edit_interaction_tool(
-        interaction_id=1,
-        new_summary="Updated by LangGraph"
+        state["user_input"],
+        history=state.get("messages", [])
     )
     return state
 

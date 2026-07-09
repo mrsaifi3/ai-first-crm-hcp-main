@@ -92,6 +92,20 @@ form textarea:focus {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+form input[readonly],
+form textarea[readonly],
+form select[disabled] {
+  background: #f9fafb;
+  cursor: default;
+}
+
+.form-hint {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
+
 form textarea {
   grid-column: span 2;
   min-height: 80px;
