@@ -53,12 +53,8 @@ export default function InteractionForm() {
   const formPrefill = useSelector((state) => state.interaction.formPrefill);
   const debounceRef = useRef(null);
 
-  useEffect(() => {
-    if (formPrefill) {
-      setFormData((prev) => ({ ...prev, ...formPrefill }));
-      dispatch(setFormPrefill(null));
-    }
-  }, [formPrefill, dispatch]);
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
 
   const loadSuggestions = useCallback(async (data) => {
     if (!data.hcpName && !data.topics && !data.outcomes) {
@@ -79,10 +75,26 @@ export default function InteractionForm() {
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      loadSuggestions(formData);
+      loadSuggestions(formDataRef.current);
     }, 800);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [formData.hcpName, formData.topics, formData.outcomes, formData.sentiment, loadSuggestions]);
+
+  useEffect(() => {
+    if (formPrefill) {
+      setFormData((prev) => ({ ...prev, ...formPrefill }));
+      dispatch(setFormPrefill(null));
+    }
+  }, [formPrefill, dispatch]);
+
+  useEffect(() => {
+    if (formData.hcpName || formData.topics || formData.outcomes) {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        loadSuggestions(formDataRef.current);
+      }, 400);
+    }
+  }, [formPrefill]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -280,6 +292,12 @@ export default function InteractionForm() {
 
         <div className="form-group full-width">
           <label>AI Suggested Follow-ups <InfoTip title="AI Suggestions" text={fieldInfo.aiSuggestions} /></label>
+          <div className="ai-suggestions-header">
+            <span>AI Suggested</span>
+            <button type="button" className="refresh-suggestions-btn" onClick={() => { if (debounceRef.current) clearTimeout(debounceRef.current); loadSuggestions(formDataRef.current); }} title="Refresh suggestions">
+              &#x21BB;
+            </button>
+          </div>
           <div className="ai-suggestions">
             {suggestionsLoading ? (
               <div className="suggestions-loading">Generating suggestions...</div>

@@ -318,6 +318,37 @@ form textarea {
 }
 
 /* ---- AI Suggestions ---- */
+.ai-suggestions-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.refresh-suggestions-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.refresh-suggestions-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
 .ai-suggestions {
   display: flex;
   flex-direction: column;

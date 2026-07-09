@@ -48,7 +48,7 @@ function ChatAssistant() {
         { role: "assistant", text: assistantReply },
       ];
 
-      if (parsed && parsed.hcpName) {
+      if (parsed && parsed.hcpName && parsed.status === "logged") {
         dispatch(setFormPrefill(parsed));
       }
       dispatch(refreshList());
