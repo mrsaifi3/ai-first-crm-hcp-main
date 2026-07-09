@@ -20,9 +20,19 @@ export default function InteractionList() {
         <ul>
           {interactions.map((item) => (
             <li key={item.id}>
-              <strong>{item.hcpName}</strong> — {item.interactionType || "Meeting"}
-              <br />
+              <div className="list-item-header">
+                <strong>{item.hcpName}</strong>
+                <span className="list-item-type">{item.interactionType || "Meeting"}</span>
+                {item.date && <span className="list-item-date">{item.date}</span>}
+                {item.sentiment && (
+                  <span className={`list-item-sentiment sentiment-${(item.sentiment || "").toLowerCase()}`}>
+                    {item.sentiment}
+                  </span>
+                )}
+              </div>
               <small>{item.summary}</small>
+              {item.topics && <div className="list-item-detail">Topics: {item.topics}</div>}
+              {item.outcomes && <div className="list-item-detail">Outcomes: {item.outcomes}</div>}
             </li>
           ))}
         </ul>

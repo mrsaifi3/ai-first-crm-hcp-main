@@ -36,14 +36,19 @@ class InteractionRequest(BaseModel):
 
 
 class InteractionResponse(BaseModel):
-    hcpName: str
-    interactionType: str
-    date: str
-    time: str
-    attendees: str
-    topics: str
-    product: str
-    summary: str
+    hcpName: str = ""
+    interactionType: str = "Meeting"
+    date: str = ""
+    time: str = ""
+    attendees: str = ""
+    topics: str = ""
+    product: str = ""
+    summary: str = ""
+    sentiment: str = "Neutral"
+    materialsShared: str = ""
+    samplesDistributed: str = ""
+    outcomes: str = ""
+    followupActions: str = ""
 
 
 @app.get("/")
@@ -68,6 +73,15 @@ def create_interaction(data: InteractionResponse):
         interaction_type=data.interactionType,
         product=data.product,
         summary=data.summary,
+        sentiment=data.sentiment,
+        date=data.date,
+        time=data.time,
+        attendees=data.attendees,
+        topics=data.topics,
+        materials_shared=data.materialsShared,
+        samples_distributed=data.samplesDistributed,
+        outcomes=data.outcomes,
+        followup_actions=data.followupActions,
     )
     db.add(interaction)
     db.commit()
@@ -99,6 +113,14 @@ def get_interactions():
             "product": r.product,
             "summary": r.summary,
             "sentiment": r.sentiment,
+            "date": r.date or "",
+            "time": r.time or "",
+            "attendees": r.attendees or "",
+            "topics": r.topics or "",
+            "materialsShared": r.materials_shared or "",
+            "samplesDistributed": r.samples_distributed or "",
+            "outcomes": r.outcomes or "",
+            "followupActions": r.followup_actions or "",
             "created_at": str(r.created_at)
         }
         for r in rows

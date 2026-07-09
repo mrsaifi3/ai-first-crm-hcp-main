@@ -17,6 +17,10 @@ Return ONLY valid JSON with these fields:
 - product (string, product or material shared)
 - summary (string, brief summary)
 - sentiment (string: Positive/Neutral/Negative)
+- materialsShared (string, materials shared with HCP)
+- samplesDistributed (string, samples distributed)
+- outcomes (string, key outcomes or agreements)
+- followupActions (string, follow-up actions or next steps)
 
 Latest input: {text}
 """
@@ -46,6 +50,10 @@ def log_interaction_tool(user_text: str, history: list = None):
     time = parsed.get("time", "")
     attendees = parsed.get("attendees", "")
     topics = parsed.get("topics", "")
+    materials_shared = parsed.get("materialsShared", "")
+    samples_distributed = parsed.get("samplesDistributed", "")
+    outcomes = parsed.get("outcomes", "")
+    followup_actions = parsed.get("followupActions", "")
 
     interaction = Interaction(
         hcp_name=hcp_name,
@@ -54,6 +62,14 @@ def log_interaction_tool(user_text: str, history: list = None):
         product=product,
         summary=summary,
         sentiment=sentiment,
+        date=date,
+        time=time,
+        attendees=attendees,
+        topics=topics,
+        materials_shared=materials_shared,
+        samples_distributed=samples_distributed,
+        outcomes=outcomes,
+        followup_actions=followup_actions,
     )
 
     db = SessionLocal()
@@ -75,5 +91,9 @@ def log_interaction_tool(user_text: str, history: list = None):
         "time": time,
         "attendees": attendees,
         "topics": topics,
+        "materialsShared": materials_shared,
+        "samplesDistributed": samples_distributed,
+        "outcomes": outcomes,
+        "followupActions": followup_actions,
         "messageToUser": f"Logged interaction with {hcp_name} ({interaction_type}, {date}). Summary: {summary}",
     }

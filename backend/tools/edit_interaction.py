@@ -11,6 +11,14 @@ FIELD_MAP = {
     "product": "product",
     "summary": "summary",
     "sentiment": "sentiment",
+    "date": "date",
+    "time": "time",
+    "attendees": "attendees",
+    "topics": "topics",
+    "materialsShared": "materials_shared",
+    "samplesDistributed": "samples_distributed",
+    "outcomes": "outcomes",
+    "followupActions": "followup_actions",
 }
 
 EDIT_PROMPT = """
@@ -27,6 +35,10 @@ Return ONLY valid JSON with the fields that changed. Possible fields:
 - product (string)
 - summary (string)
 - sentiment (string: Positive/Neutral/Negative)
+- materialsShared (string)
+- samplesDistributed (string)
+- outcomes (string)
+- followupActions (string)
 
 Only include fields that are being corrected. Example:
 User: "Sorry, the name was actually Dr. John and the sentiment was negative"

@@ -67,7 +67,7 @@ function ChatAssistant() {
   const allMessages = [
     {
       role: "assistant",
-      text: "Log interaction details here (e.g., 'Met Dr. Smith, discussed hypertension drug, positive sentiment on 9th July at 11am') or ask for summary, follow-up, or compliance check.",
+      text: 'Log interaction details here (e.g., "Met Dr. Smith, discussed Product X efficacy, positive sentiment, shared brochure") or ask for help.',
     },
     ...msgs,
   ];
@@ -75,7 +75,10 @@ function ChatAssistant() {
   return (
     <div className="chat-card">
       <div className="chat-header-row">
-        <h3>AI Assistant</h3>
+        <div>
+          <h3>AI Assistant</h3>
+          <span className="chat-subtitle">Log interaction via chat</span>
+        </div>
         <div style={{ display: "flex", gap: 6 }}>
           <button className="clear-btn" onClick={clearLog} type="button">Clear Chat</button>
           <button className="clear-all-btn" onClick={clearAll} type="button">Clear All</button>
@@ -98,8 +101,8 @@ function ChatAssistant() {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
-        <button onClick={handleSend} disabled={loading}>
-          {loading ? "Sending..." : "Send"}
+        <button onClick={handleSend} disabled={loading} className="log-btn">
+          {loading ? "Logging..." : <><span className="sparkle">&#x2728;</span> Log</>}
         </button>
       </div>
     </div>
