@@ -1,9 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setFormPrefill, refreshList } from "./interactionSlice";
 import { sendChatMessage } from "../services/interactionApi";
 
 const API_URL = "http://localhost:8000";
+
+const greeting = "Hi! I'm your CRM assistant. Tell me about your HCP interaction — who did you meet, what was discussed, and how it went?";
 
 function ChatAssistant() {
   const dispatch = useDispatch();
@@ -11,6 +13,14 @@ function ChatAssistant() {
   const [count, setCount] = useState(0);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
+  const msgs = historyRef.current;
+  const allMessages = [{ role: "assistant", text: greeting }, ...msgs];
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [allMessages.length]);
 
   const clearLog = () => {
     historyRef.current = [];
@@ -48,7 +58,7 @@ function ChatAssistant() {
         { role: "assistant", text: assistantReply },
       ];
 
-      if (parsed && parsed.hcpName && parsed.status === "logged") {
+      if (parsed && parsed.hcpName && (parsed.status === "logged" || parsed.status === "updated")) {
         dispatch(setFormPrefill(parsed));
       }
       dispatch(refreshList());
@@ -62,15 +72,6 @@ function ChatAssistant() {
       setLoading(false);
     }
   };
-
-  const msgs = historyRef.current;
-  const allMessages = [
-    {
-      role: "assistant",
-      text: 'Log interaction details here (e.g., "Met Dr. Smith, discussed Product X efficacy, positive sentiment, shared brochure") or ask for help.',
-    },
-    ...msgs,
-  ];
 
   return (
     <div className="chat-card">
@@ -91,7 +92,8 @@ function ChatAssistant() {
             {msg.text}
           </div>
         ))}
-        {loading && <div className="chat-bubble assistant">Thinking...</div>}
+        {loading && <div className="chat-bubble assistant typing">Thinking...</div>}
+        <div ref={chatEndRef} />
       </div>
 
       <div className="chat-input">
@@ -102,7 +104,7 @@ function ChatAssistant() {
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
         <button onClick={handleSend} disabled={loading} className="log-btn">
-          {loading ? "Logging..." : <><span className="sparkle">&#x2728;</span> Log</>}
+          {loading ? "Thinking..." : <><span className="sparkle">&#x2728;</span> Log</>}
         </button>
       </div>
     </div>

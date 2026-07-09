@@ -4,18 +4,31 @@ from backend.database import SessionLocal
 from backend.models import Interaction
 
 
+CRITICAL_FIELDS = ["hcpName", "topics", "sentiment"]
+NEXT_QUESTIONS = {
+    "topics": "What topics were discussed?",
+    "product": "Which product or medicine was discussed?",
+    "sentiment": "How was the HCP's sentiment — positive, neutral, or negative?",
+    "outcomes": "What outcomes or agreements came from the meeting?",
+    "followupActions": "Any follow-up actions needed?",
+    "attendees": "Were there any other attendees?",
+    "materialsShared": "Any materials shared with the HCP?",
+    "samplesDistributed": "Any samples distributed?",
+}
+
 EXTRACTION_PROMPT = """
-You are a helpful healthcare CRM assistant. The user is telling you about an HCP interaction.
-Your job is to extract structured data AND have a conversation — ask follow-up questions if details are missing.
+You are a friendly healthcare CRM assistant. Your job is to log HCP interactions naturally.
 
-IMPORTANT RULES:
-1. If the user hasn't provided enough details to log a meaningful interaction, DO NOT log it.
-   Instead, set "shouldLog": false and ask a friendly follow-up question in "messageToUser".
-2. If the user provides enough info (at minimum: hcpName + some context), set "shouldLog": true and extract all fields.
-3. Be conversational and helpful. Ask about missing key fields naturally.
-4. Return ONLY valid JSON — no extra text.
+RULES:
+1. Extract ALL fields you can from what the user says so far.
+2. Check which CRITICAL fields are still missing: hcpName, topics, sentiment.
+3. If ANY critical field is missing → set shouldLog: false, and ask ONE specific follow-up question for the most important missing field.
+4. If ALL critical fields are present → set shouldLog: true to save the interaction. Then, if other fields are missing, ask ONE follow-up question about them in messageToUser.
+5. Be conversational, friendly, and natural. Never dump a list of questions — ask ONE at a time.
+6. Use the conversation history to know what was already asked and answered — don't repeat questions.
 
-Required fields to extract when shouldLog is true:
+Return ONLY valid JSON:
+- shouldLog (boolean)
 - hcpName (string)
 - specialty (string)
 - interactionType (string: Meeting/Call/Email)
@@ -30,20 +43,34 @@ Required fields to extract when shouldLog is true:
 - samplesDistributed (string)
 - outcomes (string)
 - followupActions (string)
+- messageToUser (string, your conversational reply)
 
 Examples:
 
-User: "Met Dr. Smith today"
-Assistant: {"shouldLog": false, "messageToUser": "Great, what was discussed with Dr. Smith? Any particular product or topic?"}
+User: "Met Dr. Smith"
+Assistant: {"shouldLog": false, "hcpName": "Dr. Smith", "messageToUser": "Got it! What did you discuss with Dr. Smith?"}
 
-User: "Met Dr. Smith, discussed OncoBoost efficacy, positive response"
-Assistant: {"shouldLog": true, "date": "2025-07-10", "hcpName": "Dr. Smith", "topics": "OncoBoost efficacy", "sentiment": "Positive", "interactionType": "Meeting", "summary": "Discussed OncoBoost efficacy with Dr. Smith, positive response", "messageToUser": "Logged interaction with Dr. Smith (Meeting). Do you have any follow-up actions to add?"}
+User: "Met Dr. Smith, discussed OncoBoost"
+Assistant: {"shouldLog": false, "hcpName": "Dr. Smith", "topics": "OncoBoost", "messageToUser": "Thanks! How was Dr. Smith's sentiment — positive, neutral, or negative?"}
 
-User: "Met Dr. Smith yesterday at his clinic, discussed hypertension drug, he was positive, shared brochure"
-Assistant: {"shouldLog": true, "date": "2025-07-09", "hcpName": "Dr. Smith", "topics": "Hypertension drug discussion", "sentiment": "Positive", "interactionType": "Meeting", "attendees": "Dr. Smith", "materialsShared": "Brochure", "summary": "Met Dr. Smith at his clinic, discussed hypertension drug, positive sentiment, shared brochure", "messageToUser": "Logged interaction with Dr. Smith. Would you like to add any outcomes or follow-up actions?"}
+User: "Met Dr. Smith, discussed OncoBoost, positive response"
+Assistant: {"shouldLog": true, "hcpName": "Dr. Smith", "topics": "OncoBoost", "sentiment": "Positive", "summary": "Met Dr. Smith, discussed OncoBoost, positive response", "messageToUser": "Great, logged! Were there any outcomes or follow-up actions from this meeting?"}
+
+User: "Yes, need to follow up in 2 weeks with samples"
+Assistant: {"shouldLog": true, "hcpName": "Dr. Smith", "topics": "OncoBoost", "sentiment": "Positive", "followupActions": "Follow up in 2 weeks with samples", "samplesDistributed": "Samples", "outcomes": "Follow-up scheduled", "summary": "Met Dr. Smith, discussed OncoBoost, positive response. Follow-up in 2 weeks with samples.", "messageToUser": "Perfect, everything is logged! Dr. Smith's interaction is complete. You can add more details anytime or ask me for a summary."}
 
 Latest user input: {text}
 """
+
+
+def _pick_next_question(parsed: dict) -> str:
+    order = ["topics", "product", "sentiment", "outcomes", "followupActions", "attendees", "materialsShared", "samplesDistributed"]
+    for field in order:
+        if field == "sentiment":
+            continue  # handled by critical check
+        if not parsed.get(field):
+            return NEXT_QUESTIONS[field]
+    return "Is there anything else to add?"
 
 
 def log_interaction_tool(user_text: str, history: list = None):
@@ -60,7 +87,7 @@ def log_interaction_tool(user_text: str, history: list = None):
     except json.JSONDecodeError:
         parsed = {
             "shouldLog": False,
-            "messageToUser": "I didn't quite catch that. Could you tell me more about the interaction?",
+            "messageToUser": "I didn't quite catch that. Could you tell me about the HCP interaction?",
         }
 
     should_log = parsed.get("shouldLog", False)
@@ -69,6 +96,19 @@ def log_interaction_tool(user_text: str, history: list = None):
         return {
             "status": "asking",
             "hcpName": parsed.get("hcpName", ""),
+            "specialty": parsed.get("specialty", ""),
+            "interactionType": parsed.get("interactionType", "Meeting"),
+            "date": parsed.get("date", ""),
+            "time": parsed.get("time", ""),
+            "attendees": parsed.get("attendees", ""),
+            "topics": parsed.get("topics", ""),
+            "product": parsed.get("product", ""),
+            "summary": parsed.get("summary", ""),
+            "sentiment": parsed.get("sentiment", ""),
+            "materialsShared": parsed.get("materialsShared", ""),
+            "samplesDistributed": parsed.get("samplesDistributed", ""),
+            "outcomes": parsed.get("outcomes", ""),
+            "followupActions": parsed.get("followupActions", ""),
             "messageToUser": parsed.get(
                 "messageToUser",
                 "Could you share more details about the HCP interaction?",
@@ -132,6 +172,6 @@ def log_interaction_tool(user_text: str, history: list = None):
         "followupActions": followup_actions,
         "messageToUser": parsed.get(
             "messageToUser",
-            f"Logged interaction with {hcp_name} ({interaction_type}, {date}).",
+            f"Logged interaction with {hcp_name}. " + _pick_next_question(parsed),
         ),
     }

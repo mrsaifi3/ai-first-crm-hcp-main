@@ -22,9 +22,13 @@ FIELD_MAP = {
 }
 
 EDIT_PROMPT = """
-You are a healthcare CRM assistant. The user wants to CORRECT a previously logged HCP interaction.
-Based on the conversation history and the latest correction, extract ONLY the fields that need to be UPDATED.
-Return ONLY valid JSON with the fields that changed. Possible fields:
+You are a healthcare CRM assistant. The user is providing ADDITIONAL or CORRECTED info about the last HCP interaction.
+
+Based on the conversation history and the latest input, determine what fields to ADD or UPDATE.
+Return ONLY valid JSON with ALL the fields you can determine from the full conversation so far.
+If a field is not mentioned, leave it as an empty string "".
+
+Possible fields:
 - hcpName (string)
 - specialty (string)
 - interactionType (string: Meeting/Call/Email)
@@ -40,11 +44,17 @@ Return ONLY valid JSON with the fields that changed. Possible fields:
 - outcomes (string)
 - followupActions (string)
 
-Only include fields that are being corrected. Example:
-User: "Sorry, the name was actually Dr. John and the sentiment was negative"
-Return: {"hcpName": "Dr. John", "sentiment": "Negative"}
+After determining the fields, in messageToUser, confirm what was added and ask if there's anything else missing.
 
-Correction: {text}
+Examples:
+
+User: "Outcomes were positive, need to follow up in 2 weeks"
+Assistant: {"outcomes": "Positive outcomes", "followupActions": "Follow up in 2 weeks", "messageToUser": "Added outcomes and follow-up. Anything else to add?"}
+
+User: "The sentiment was actually negative"
+Assistant: {"sentiment": "Negative", "messageToUser": "Updated sentiment to Negative. Any other changes?"}
+
+Latest input: {text}
 """
 
 
@@ -65,20 +75,45 @@ def edit_interaction_tool(user_text: str, history: list = None):
             "messageToUser": "Could not understand the correction. Please try again.",
         }
 
-    changed = list(parsed.keys())
+    changed = [k for k in parsed.keys() if k != "messageToUser" and parsed.get(k)]
 
     db = SessionLocal()
     latest = db.query(Interaction).order_by(Interaction.id.desc()).first()
 
-    if latest:
+    if latest and changed:
         for frontend_key, db_col in FIELD_MAP.items():
-            if frontend_key in parsed and parsed[frontend_key]:
+            if frontend_key in parsed and parsed.get(frontend_key):
                 setattr(latest, db_col, parsed[frontend_key])
         db.commit()
+        db.refresh(latest)
     db.close()
 
-    return {
+    result = {
         "status": "updated",
-        "messageToUser": f"Updated fields: {', '.join(changed)}.",
-        **parsed,
+        "messageToUser": parsed.get(
+            "messageToUser",
+            f"Updated interaction. Added: {', '.join(changed)}." if changed else "No changes detected.",
+        ),
     }
+
+    if latest:
+        result.update({
+            "hcpName": latest.hcp_name,
+            "specialty": latest.specialty or "",
+            "interactionType": latest.interaction_type or "Meeting",
+            "product": latest.product or "",
+            "summary": latest.summary or "",
+            "sentiment": latest.sentiment or "Neutral",
+            "date": latest.date or "",
+            "time": latest.time or "",
+            "attendees": latest.attendees or "",
+            "topics": latest.topics or "",
+            "materialsShared": latest.materials_shared or "",
+            "samplesDistributed": latest.samples_distributed or "",
+            "outcomes": latest.outcomes or "",
+            "followupActions": latest.followup_actions or "",
+        })
+    else:
+        result.update(parsed)
+
+    return result

@@ -15,7 +15,7 @@ def call_llm(prompt: str, history: list = None) -> str:
     messages = [
         {
             "role": "system",
-            "content": "You are a healthcare CRM assistant for logging HCP interactions."
+            "content": "You are a friendly and conversational healthcare CRM assistant. You help log HCP interactions naturally — ask questions one at a time, be helpful, and keep the conversation flowing. Never dump multiple questions at once."
         }
     ]
 

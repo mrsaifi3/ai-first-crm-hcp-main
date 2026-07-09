@@ -10,6 +10,14 @@ from backend.tools.compliance import compliance_check_tool
 
 def detect_intent(state: AgentState) -> AgentState:
     text = state["user_input"].lower()
+    messages = state.get("messages", [])
+
+    # If the last assistant message asked a question, route to edit
+    if messages:
+        last = messages[-1]
+        if last.get("role") == "assistant" and "?" in last.get("text", ""):
+            state["intent"] = "edit"
+            return state
 
     if "edit" in text:
         state["intent"] = "edit"
