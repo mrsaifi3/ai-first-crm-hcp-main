@@ -86,7 +86,7 @@ def _pick_next_question(parsed: dict) -> str:
 
 
 def log_interaction_tool(user_text: str, history: list = None):
-    prompt = EXTRACTION_PROMPT.format(text=user_text)
+    prompt = EXTRACTION_PROMPT.replace("{text}", user_text)
     raw = call_llm(prompt, history=history)
 
     parsed = {}

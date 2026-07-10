@@ -59,7 +59,7 @@ Latest input: {text}
 
 
 def edit_interaction_tool(user_text: str, history: list = None):
-    prompt = EDIT_PROMPT.format(text=user_text)
+    prompt = EDIT_PROMPT.replace("{text}", user_text)
     raw = call_llm(prompt, history=history)
 
     parsed = {}
