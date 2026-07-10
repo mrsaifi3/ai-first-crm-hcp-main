@@ -1,41 +1,58 @@
 # AI-First CRM – HCP Interaction Module
 
-## Overview
-
-AI-first CRM for Healthcare Professionals (HCP). Log, manage, and analyze HCP interactions via structured form or conversational AI chat.
-
-Built with React + Redux (frontend) and FastAPI + LangGraph + Groq LLM (backend).
+Log, manage, and analyze Healthcare Professional (HCP) interactions via structured form or conversational AI chat. Built with React + Redux Toolkit (frontend) and FastAPI + LangGraph + Groq LLM (backend).
 
 ## Tech Stack
 
-- **Frontend:** React, Redux Toolkit, Vite, Google Inter font
-- **Backend:** Python, FastAPI, LangGraph, Groq (gemma2-9b-it)
-- **Database:** SQLite (dev) / PostgreSQL (prod)
-- **State Management:** Redux Toolkit
-
-## LangGraph Agent Tools
-
-1. **Log Interaction** – Logs HCP interactions using LLM for summarization & entity extraction
-2. **Edit Interaction** – Modifies existing logged interactions
-3. **Summarize** – Summarizes all logged interactions
-4. **Follow-up Recommendation** – Suggests follow-up actions
-5. **Compliance Check** – Validates interactions for compliance issues
+- **Frontend:** React 18, Redux Toolkit, Vite, react-hot-toast
+- **Backend:** Python, FastAPI, LangGraph, Groq (llama-3.3-70b-versatile)
+- **Database:** SQLite (via SQLAlchemy)
+- **Agent Tools:** Log, Edit, Summarize, Follow-up, Compliance check
 
 ## Setup
 
-### Backend
+### Prerequisites
+
+- Node.js 18+
+- Python 3.11+
+- Groq API key (free at https://console.groq.com)
+
+### 1. Clone & Install
 
 ```bash
+# Frontend
+cd ai-first-crm-hcp-main
+npm install
+
+# Backend
 cd backend
 pip install -r requirements.txt
-set GROQ_API_KEY=gsk_your_key_here
-uvicorn backend.main:app --reload --port 8000
+cd ..
 ```
 
-### Frontend
+### 2. Set API Key
 
+Create `.env` in the root `ai-first-crm-hcp-main` folder:
+
+```
+GROQ_API_KEY=gsk_your_key_here
+```
+
+The backend auto-loads this via python-dotenv.
+
+### 3. Run
+
+Open **two terminals**:
+
+**Terminal 1 – Backend (port 8000):**
 ```bash
-npm install
+cd ai-first-crm-hcp-main
+python -m uvicorn backend.main:app --reload --port 8000
+```
+
+**Terminal 2 – Frontend (port 5173):**
+```bash
+cd ai-first-crm-hcp-main
 npm run dev
 ```
 
@@ -43,7 +60,27 @@ Open http://localhost:5173
 
 ## Features
 
-- Dual input modes: Form mode & AI Chat mode
-- AI auto-fills form fields from natural language
-- LangGraph agent routes intents (log, edit, summary, follow-up, compliance)
-- Responsive dashboard UI
+- **Form Mode** – Manual structured input with sentiment selector, materials, outcomes
+- **AI Chat Mode** – Natural language logging with auto-form-fill
+- **LangGraph Agent** – Routes intents: log, edit, summary, follow-up, compliance
+- **Live Suggestions** – AI suggests follow-up actions as you type
+- **Dashboard** – View all logged interactions with delete option
+
+## Project Structure
+
+```
+ai-first-crm-hcp-main/
+├── src/                    # React frontend
+│   ├── interaction/        # Form, Chat, List components + Redux slice
+│   ├── app/store.js        # Redux store
+│   └── services/           # API client
+├── backend/
+│   ├── main.py             # FastAPI server
+│   ├── agent/              # LangGraph state + graph
+│   ├── tools/              # Agent tool functions
+│   ├── llm/                # Groq LLM client
+│   ├── database.py         # SQLAlchemy setup
+│   └── models.py           # Interaction model
+├── .env                    # API key (gitignored)
+└── package.json
+```
