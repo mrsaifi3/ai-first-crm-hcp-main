@@ -135,16 +135,10 @@ function ChatAssistant() {
   };
 
   return (
-    <div className="chat-card">
-      <div className="chat-header-row">
-        <div>
-          <h3>AI Assistant</h3>
-          <span className="chat-subtitle">Log interaction via chat</span>
-        </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button className="clear-btn" onClick={clearLog} type="button">Clear Chat</button>
-          <button className="clear-all-btn" onClick={clearAll} type="button">Clear All</button>
-        </div>
+    <div className="chat-wrapper">
+      <div className="chat-actions chat-actions-inline">
+        <button className="chat-btn ripple-btn dark-ripple" onClick={clearLog} type="button">Clear Chat</button>
+        <button className="chat-btn danger ripple-btn dark-ripple" onClick={clearAll} type="button">Clear All</button>
       </div>
 
       <div className="chat-box">
@@ -157,15 +151,15 @@ function ChatAssistant() {
         <div ref={chatEndRef} />
       </div>
 
-      <div className="chat-input">
+      <div className="chat-input-bar">
         <input
           placeholder="Describe interaction..."
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
-        <button onClick={handleSend} disabled={loading} className="log-btn">
-          {loading ? "Thinking..." : <><span className="sparkle">&#x2728;</span> Log</>}
+        <button onClick={handleSend} disabled={loading} className="send-btn ripple-btn">
+          {loading ? "Thinking..." : <>Send</>}
         </button>
       </div>
     </div>

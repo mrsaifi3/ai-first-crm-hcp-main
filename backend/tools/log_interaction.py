@@ -143,6 +143,7 @@ def log_interaction_tool(user_text: str, history: list = None):
     followup_actions = parsed.get("followupActions", "")
 
     interaction = Interaction(
+        user_id=None,
         hcp_name=hcp_name,
         specialty=specialty,
         interaction_type=interaction_type,

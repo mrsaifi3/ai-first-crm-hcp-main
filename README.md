@@ -1,198 +1,273 @@
-# AI-First CRM – HCP Interaction Logger
-
-A smart CRM system for Healthcare Professionals (HCPs) where you can log your field interactions either by filling a form manually or just chatting with an AI assistant. Built as a full-stack application with React on the frontend and a Python AI agent on the backend.
-
----
-
-## What it does
-
-If you're a medical representative or sales person who meets doctors and healthcare professionals, this tool lets you:
-
-- Log details of your meetings (who, when, what was discussed, how it went)
-- Use an AI chat to describe the meeting in plain English and have the form auto-fill
-- Get AI-powered suggestions for follow-up actions
-- Check if your form is complete before submitting
-- View all your past interactions in one place
-
-The AI uses LangGraph (a graph-based agent framework) to understand what you want to do — whether it's logging a new interaction, editing an existing one, getting a summary, or checking compliance — and routes your request to the right handler automatically.
-
----
-
-## Tech Stack
-
-**Frontend:**
-- React 18 with Hooks
-- Redux Toolkit (state management)
-- Vite (build tool)
-- react-hot-toast (notifications)
-
-**Backend:**
-- Python FastAPI (REST server)
-- LangGraph (AI agent graph)
-- Groq LLM (llama-3.3-70b-versatile) — free, fast inference
-- SQLAlchemy + SQLite (database)
-
-**Agent has 5 tools:**
-1. Log Interaction — understands natural language and extracts structured data
-2. Edit Interaction — updates previously logged entries
-3. Summarize — gives you a count of all interactions
-4. Follow-up Recommendation — suggests next steps based on context
-5. Compliance Check — validates interactions for compliance issues
+<div align="center">
+  <img src="/aivoa-logo.jpg" alt="AIVOA.AI" width="120" />
+  <h1>AI-First CRM – HCP Interaction Logger</h1>
+  <p>
+    <strong>A smart CRM system for Healthcare Professionals to log, track, and manage field interactions using AI</strong>
+  </p>
+  <p>
+    <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=flat&logo=react" alt="React 18">
+    <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=flat&logo=python" alt="Python 3.11">
+    <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=flat&logo=fastapi" alt="FastAPI">
+    <img src="https://img.shields.io/badge/LangGraph-0.2-FF6F00?style=flat" alt="LangGraph">
+    <img src="https://img.shields.io/badge/Groq-LLM-1E90FF?style=flat" alt="Groq LLM">
+    <img src="https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite" alt="SQLite">
+    <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
+  </p>
+</div>
 
 ---
 
-## How to run
+## 📋 Overview
 
-### What you need
+AI-First CRM is a full-stack application built for **medical representatives and sales professionals** who meet doctors and healthcare professionals (HCPs) in the field. It provides two ways to log interactions:
 
-- Node.js 18 or higher
-- Python 3.11 or higher
-- A Groq API key (free signup at https://console.groq.com)
+- **Manual Form** — Fill in structured fields for precise data entry
+- **AI Chat Mode** — Describe your meeting in plain English; the AI extracts the details and auto-fills the form
 
-### Step-by-step
+The backend uses **LangGraph**, a graph-based AI agent framework, to intelligently route user requests — whether it's logging a new interaction, editing an existing one, generating summaries, suggesting follow-ups, or checking compliance.
 
-**1. Install frontend dependencies**
+---
 
-Open a terminal in the project folder and run:
+## ✨ Key Features
 
+| Feature | Description |
+|---------|-------------|
+| 🧠 **AI-Powered Chat** | Speak naturally — "Met Dr. Sharma today, discussed hypertension drug" — AI extracts and fills everything |
+| 📝 **Manual Form Entry** | Traditional form with all fields for those who prefer structured input |
+| 📊 **Interaction History** | View, search, and manage all past interactions in one place |
+| 🔄 **Edit Existing Entries** | Update previously logged interactions via chat or form |
+| 📈 **Smart Summaries** | Get quick counts and overviews of all logged interactions |
+| 🎯 **Follow-up Suggestions** | AI recommends next steps based on meeting context |
+| ✅ **Compliance Check** | Validate interactions for regulatory compliance issues |
+| 🔍 **Form Completeness Validation** | Ensures no required fields are missed before submission |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (React + Vite)                   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │  Manual Form  │  │ AI Chat      │  │ Interaction List │  │
+│  │  Component    │  │ Component    │  │ Component        │  │
+│  └──────┬───────┘  └──────┬───────┘  └────────┬─────────┘  │
+│         │                 │                    │             │
+│         └────────┬────────┘────────────────────┘             │
+│                  │ HTTP REST                                │
+│           ┌──────▼──────┐                                   │
+│           │  Redux Store │                                   │
+│           └─────────────┘                                   │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ REST API (JSON)
+┌──────────────────────▼──────────────────────────────────────┐
+│                   Backend (FastAPI + Python)                 │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │              LangGraph AI Agent                       │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐  │   │
+│  │  │ Log      │ │ Edit     │ │Summarize │ │Follow- │  │   │
+│  │  │Interact. │ │Interact. │ │          │ │up      │  │   │
+│  │  └──────────┘ └──────────┘ └──────────┘ └────────┘  │   │
+│  │  ┌──────────┐ ┌──────────┐                           │   │
+│  │  │Compliance│ │Check Form│                           │   │
+│  │  └──────────┘ └──────────┘                           │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                       │                                      │
+│  ┌────────────────────▼─────────────────────────────────┐   │
+│  │          Groq LLM (llama-3.3-70b-versatile)          │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                       │                                      │
+│  ┌────────────────────▼─────────────────────────────────┐   │
+│  │          SQLite Database (SQLAlchemy ORM)             │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+| Technology | Purpose |
+|------------|---------|
+| **React 18** | UI library with modern Hooks API |
+| **Redux Toolkit** | State management — interactions, chat, form state |
+| **Vite** | Fast dev server and build tool |
+| **react-hot-toast** | Lightweight toast notifications |
+
+### Backend
+| Technology | Purpose |
+|------------|---------|
+| **FastAPI** | High-performance REST API server |
+| **LangGraph** | Orchestrates the AI agent's decision graph |
+| **Groq LLM** | `llama-3.3-70b-versatile` — fast, free inference |
+| **SQLAlchemy** | ORM for database operations |
+| **SQLite** | Lightweight, file-based database |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+| Requirement | Version |
+|-------------|---------|
+| Node.js | 18+ |
+| Python | 3.11+ |
+| Groq API Key | Free at [console.groq.com](https://console.groq.com) |
+
+### Installation
+
+**1. Clone the repository**
+```bash
+git clone <your-repo-url>
+cd ai-first-crm-hcp-main
+```
+
+**2. Install frontend dependencies**
 ```bash
 npm install
 ```
 
-This installs React, Redux, Vite, and everything else needed for the UI.
-
-**2. Install backend dependencies**
-
+**3. Install backend dependencies**
 ```bash
 pip install -r backend/requirements.txt
 ```
 
-This installs FastAPI, LangGraph, Groq SDK, SQLAlchemy, and python-dotenv.
+**4. Configure environment variables**
 
-**3. Add your Groq API key**
+Create a `.env` file in the project root:
 
-Create a file named `.env` in the project root (inside `ai-first-crm-hcp-main/`) with this content:
-
-```
+```env
 GROQ_API_KEY=gsk_your_actual_key_here
 ```
 
-Replace `gsk_your_actual_key_here` with your real key from Groq. This file is already in `.gitignore` so it won't accidentally get committed.
+> ⚠️ This file is already in `.gitignore` — it will not be committed.
 
-**4. Start the backend (Terminal 1)**
+### Running the Application
 
+Open **two terminals**:
+
+#### Terminal 1 — Backend Server
 ```bash
 python -m uvicorn backend.main:app --reload --port 8000
 ```
-
-Keep this running. It starts the FastAPI server on port 8000 with auto-reload (so changes take effect automatically). You should see:
-
+Expected output:
 ```
 INFO:     Uvicorn running on http://127.0.0.1:8000
 INFO:     Application startup complete.
 ```
 
-**5. Start the frontend (Terminal 2)**
-
-Open a second terminal and run:
-
+#### Terminal 2 — Frontend Dev Server
 ```bash
 npm run dev
 ```
-
-This starts the Vite dev server. You should see:
-
+Expected output:
 ```
 VITE v5.x  ready in X ms
 ➜  Local:   http://localhost:5173/
 ```
 
-**6. Open the app**
-
-Go to http://localhost:5173 in your browser. You'll see the CRM dashboard with a form on the left and a chat assistant on the right.
+Open **http://localhost:5173** in your browser.
 
 ---
 
-## How to use
+## 📖 Usage Guide
 
-### Form Mode
+### Mode 1: Manual Form
 
-Fill in the fields manually:
-- HCP Name — the doctor or healthcare professional you met
-- Interaction Type — Meeting, Call, or Email
-- Date and Time
-- Attendees — anyone else who was there
-- Topics Discussed — what you talked about
-- Materials Shared / Samples Distributed — what you gave them
-- Sentiment — Positive, Neutral, or Negative
-- Outcomes — what came out of the meeting
-- Follow-up Actions — next steps
+Fill in the form fields directly:
 
-Click "Submit Interaction" to save it.
+| Field | Description |
+|-------|-------------|
+| HCP Name | Doctor or healthcare professional's name |
+| Interaction Type | Meeting, Call, or Email |
+| Date & Time | When the interaction occurred |
+| Attendees | Other people present |
+| Topics Discussed | Key discussion points |
+| Materials/Samples | What was shared or distributed |
+| Sentiment | Positive, Neutral, or Negative |
+| Outcomes | Results of the meeting |
+| Follow-up Actions | Next steps |
 
-### AI Chat Mode
+Click **Submit Interaction** to save.
 
-Click the toggle to switch to chat mode. Type something like:
+### Mode 2: AI Chat
 
-```
-Met Dr. Sharma today, discussed the new hypertension drug. He was positive about it and wants samples next week.
-```
+Toggle to chat mode and describe your meeting naturally:
+
+> *"Met Dr. Sharma today, discussed the new hypertension drug. He was positive about it and wants samples next week."*
 
 The AI will:
-1. Parse your message and extract the details
-2. Auto-fill the form with what it understood
-3. Ask follow-up questions if anything is missing
+1. Parse the message and extract structured data
+2. Auto-fill the form with extracted information
+3. Ask clarifying questions if any fields are missing
 
-You can also say things like "Give me a summary" or "Suggest follow-ups" and the AI agent will route to the right tool.
+You can also use commands like:
+- *"Give me a summary"* — returns interaction count
+- *"Suggest follow-ups"* — AI recommends next steps
+- *"Edit the last entry"* — modify existing records
+- *"Check compliance"* — validate for compliance issues
 
 ---
 
-## Project Structure
+## 📡 API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | Health check — verifies server is running |
+| `POST` | `/interaction` | Send user input to the LangGraph agent |
+| `POST` | `/interactions` | Save a new interaction to the database |
+| `GET` | `/interactions` | Retrieve all logged interactions |
+| `DELETE` | `/interactions` | Delete all interactions |
+| `POST` | `/suggestions` | Generate AI follow-up suggestions |
+| `POST` | `/check-form` | Validate form completeness |
+
+---
+
+## 📁 Project Structure
 
 ```
 ai-first-crm-hcp-main/
 │
-├── src/                          # React frontend
-│   ├── main.jsx                  # Entry point
-│   ├── App.jsx                   # Main layout component
-│   ├── App.css                   # All styles
+├── src/                              # React frontend source
+│   ├── main.jsx                      # Application entry point
+│   ├── App.jsx                       # Root layout component
+│   ├── App.css                       # Global styles
 │   ├── app/
-│   │   └── store.js              # Redux store config
+│   │   └── store.js                  # Redux store configuration
 │   ├── interaction/
-│   │   ├── InteractionForm.jsx   # Manual form component
-│   │   ├── ChatAssistant.jsx     # AI chat component
-│   │   ├── InteractionList.jsx   # List of logged interactions
-│   │   ├── InfoTip.jsx           # Tooltip helper component
-│   │   └── interactionSlice.js   # Redux state slice
+│   │   ├── InteractionForm.jsx       # Manual data entry form
+│   │   ├── ChatAssistant.jsx         # AI chat interface
+│   │   ├── InteractionList.jsx       # Logged interactions display
+│   │   ├── InfoTip.jsx               # Tooltip helper component
+│   │   └── interactionSlice.js       # Redux state slice
 │   └── services/
-│       └── interactionApi.js     # API calls to backend
+│       └── interactionApi.js         # HTTP client for backend API
 │
-├── backend/
-│   ├── main.py                   # FastAPI server with all endpoints
-│   ├── database.py               # SQLAlchemy engine and session
-│   ├── models.py                 # Database model (Interaction table)
-│   ├── requirements.txt          # Python dependencies
-│   ├── __init__.py
+├── backend/                          # Python backend source
+│   ├── main.py                       # FastAPI application & routes
+│   ├── database.py                   # SQLAlchemy engine & session
+│   ├── models.py                     # Database ORM models
+│   ├── requirements.txt              # Python package dependencies
 │   │
-│   ├── agent/
-│   │   ├── graph.py              # LangGraph state graph definition
-│   │   ├── state.py              # Agent state type definition
-│   │   └── __init__.py
+│   ├── agent/                        # LangGraph AI agent
+│   │   ├── graph.py                  # Agent state graph definition
+│   │   └── state.py                  # Graph state type definitions
 │   │
-│   ├── llm/
-│   │   ├── groq_client.py        # Groq API client with dotenv support
-│   │   └── __init__.py
+│   ├── llm/                          # LLM integration
+│   │   └── groq_client.py            # Groq API client
 │   │
-│   └── tools/
-│       ├── log_interaction.py    # Tool: log new interaction via LLM
-│       ├── edit_interaction.py   # Tool: edit existing interaction
-│       ├── summarize.py          # Tool: count all interactions
-│       ├── followup.py           # Tool: suggest follow-up actions
-│       ├── compliance.py         # Tool: compliance check
-│       ├── check_form.py         # Tool: validate form completeness
-│       └── __init__.py
+│   └── tools/                        # Agent tool implementations
+│       ├── log_interaction.py        # Parse & log new interaction
+│       ├── edit_interaction.py       # Modify existing interaction
+│       ├── summarize.py              # Count all interactions
+│       ├── followup.py               # Suggest follow-up actions
+│       ├── compliance.py             # Compliance validation
+│       └── check_form.py             # Form completeness check
 │
-├── .env                          # Your API key (DO NOT commit)
+├── .env                              # Environment variables (gitignored)
 ├── .gitignore
 ├── package.json
 ├── vite.config.js
@@ -201,22 +276,35 @@ ai-first-crm-hcp-main/
 
 ---
 
-## API Endpoints
+## 💡 Agent Tools Detail
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/` | Health check |
-| POST | `/interaction` | Send user input to LangGraph agent |
-| POST | `/interactions` | Save a new interaction to database |
-| GET | `/interactions` | Get all logged interactions |
-| DELETE | `/interactions` | Delete all interactions |
-| POST | `/suggestions` | Get AI follow-up suggestions |
-| POST | `/check-form` | Check if form is complete |
+The LangGraph agent has **5 core tools** that it routes to automatically based on user intent:
+
+| Tool | Trigger Phrases | What It Does |
+|------|----------------|--------------|
+| **Log Interaction** | *"Met Dr...", "Had a meeting...", "Called..."* | Extracts structured data from natural language |
+| **Edit Interaction** | *"Edit...", "Update...", "Change..."* | Modifies previously saved entries |
+| **Summarize** | *"Summary...", "How many...", "Count..."* | Returns total number of logged interactions |
+| **Follow-up Recommendation** | *"Suggest...", "Next steps...", "Follow up..."* | Analyzes context and recommends actions |
+| **Compliance Check** | *"Compliance...", "Check...", "Validate..."* | Validates interactions for compliance issues |
 
 ---
 
-## One-time Note (Windows PowerShell)
+## ⚙️ Configuration
 
-If you're on Windows, `uvicorn` may not be in your PATH. Use `python -m uvicorn` instead of just `uvicorn` as shown above.
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GROQ_API_KEY` | Yes | Your Groq API key for LLM access |
 
-The first time you run the backend, SQLite database file `crm.db` will be created automatically in the project root with the correct table schema.
+---
+
+## 🪟 Windows Notes
+
+- Use `python -m uvicorn` instead of `uvicorn` directly (PATH issue)
+- On first run, `crm.db` (SQLite) is created automatically in the project root
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
