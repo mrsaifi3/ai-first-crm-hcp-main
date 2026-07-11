@@ -2,7 +2,7 @@
   <img src="/aivoa-logo.jpg" alt="AIVOA.AI" width="120" />
   <h1>AI-First CRM – HCP Interaction Logger</h1>
   <p>
-    <strong>A smart CRM system for Healthcare Professionals to log, track, and manage field interactions using AI</strong>
+    <strong>Intelligent field interaction management for healthcare professionals, powered by LangGraph & Groq LLM</strong>
   </p>
   <p>
     <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=flat&logo=react" alt="React 18">
@@ -17,122 +17,167 @@
 
 ---
 
-## 📋 Overview
+## Table of Contents
 
-AI-First CRM is a full-stack application built for **medical representatives and sales professionals** who meet doctors and healthcare professionals (HCPs) in the field. It provides two ways to log interactions:
-
-- **Manual Form** — Fill in structured fields for precise data entry
-- **AI Chat Mode** — Describe your meeting in plain English; the AI extracts the details and auto-fills the form
-
-The backend uses **LangGraph**, a graph-based AI agent framework, to intelligently route user requests — whether it's logging a new interaction, editing an existing one, generating summaries, suggesting follow-ups, or checking compliance.
-
----
-
-## ✨ Key Features
-
-| Feature | Description |
-|---------|-------------|
-| 🧠 **AI-Powered Chat** | Speak naturally — "Met Dr. Sharma today, discussed hypertension drug" — AI extracts and fills everything |
-| 📝 **Manual Form Entry** | Traditional form with all fields for those who prefer structured input |
-| 📊 **Interaction History** | View, search, and manage all past interactions in one place |
-| 🔄 **Edit Existing Entries** | Update previously logged interactions via chat or form |
-| 📈 **Smart Summaries** | Get quick counts and overviews of all logged interactions |
-| 🎯 **Follow-up Suggestions** | AI recommends next steps based on meeting context |
-| ✅ **Compliance Check** | Validate interactions for regulatory compliance issues |
-| 🔍 **Form Completeness Validation** | Ensures no required fields are missed before submission |
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Usage Guide](#usage-guide)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [Agent Tools](#agent-tools)
+- [Configuration](#configuration)
+- [Testing](#testing)
+- [Windows Notes](#windows-notes)
+- [License](#license)
 
 ---
 
-## 🏗️ Architecture
+## Overview
+
+AI-First CRM is a full-stack application purpose-built for **medical representatives, field sales professionals, and healthcare liaison teams** who regularly interact with doctors, specialists, and healthcare providers (HCPs). The platform replaces manual note-taking and spreadsheet logging with an intelligent, dual-mode interaction management system.
+
+Users can log their field meetings in two ways:
+
+- **Manual Form Entry** — Structured input with validated fields for precise, compliant data entry.
+- **AI Chat Mode** — Describe your meeting in natural language; the AI agent extracts all relevant details, auto-fills the form, and saves the interaction — no typing required.
+
+The backend is orchestrated by a **LangGraph-based AI agent** that intelligently routes user intents — logging, editing, summarizing, compliance checking, or follow-up recommendations — to the appropriate tool. All LLM inference runs on **Groq's llama-3.3-70b-versatile** for fast, cost-free inference.
+
+---
+
+## Key Features
+
+| Feature | Details |
+|---------|---------|
+| **AI-Powered Chat** | Speak naturally — *"Met Dr. Sharma today, discussed CardioRelief"* — AI extracts every field and submits the form |
+| **Manual Form Entry** | Complete structured form with validation, tooltips, sentiment selector, and auto-suggestions |
+| **Interaction History** | Searchable, sortable, paginated table of all logged interactions with export support |
+| **Edit via Chat** | Modify previously logged entries by simply saying *"Edit the last entry — change the date to tomorrow"* |
+| **Smart Summaries** | *"Give me a summary"* returns total counts, weekly stats, sentiment breakdown, and top HCPs |
+| **Follow-up Suggestions** | AI analyzes meeting context and recommends actionable next steps |
+| **Compliance Validation** | Flags off-label discussions, missing required fields, and regulatory concerns |
+| **Form Completeness Check** | Validates all critical fields before submission with real-time feedback |
+| **Analytics Dashboard** | Visual breakdown of sentiment, interaction types, top HCPs, and recent activity with animated charts |
+| **Voice Input** | Dictate meeting notes directly using browser speech recognition |
+| **Dark / Light / Adaptive Theme** | Three theme modes — dark, light, and adaptive (auto-switches based on time of day) |
+| **Auto-suggestions** | AI generates follow-up action suggestions as you type form fields |
+
+---
+
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (React + Vite)                   │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │  Manual Form  │  │ AI Chat      │  │ Interaction List │  │
-│  │  Component    │  │ Component    │  │ Component        │  │
-│  └──────┬───────┘  └──────┬───────┘  └────────┬─────────┘  │
-│         │                 │                    │             │
-│         └────────┬────────┘────────────────────┘             │
-│                  │ HTTP REST                                │
-│           ┌──────▼──────┐                                   │
-│           │  Redux Store │                                   │
-│           └─────────────┘                                   │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ REST API (JSON)
-┌──────────────────────▼──────────────────────────────────────┐
-│                   Backend (FastAPI + Python)                 │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              LangGraph AI Agent                       │   │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐  │   │
-│  │  │ Log      │ │ Edit     │ │Summarize │ │Follow- │  │   │
-│  │  │Interact. │ │Interact. │ │          │ │up      │  │   │
-│  │  └──────────┘ └──────────┘ └──────────┘ └────────┘  │   │
-│  │  ┌──────────┐ ┌──────────┐                           │   │
-│  │  │Compliance│ │Check Form│                           │   │
-│  │  └──────────┘ └──────────┘                           │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                       │                                      │
-│  ┌────────────────────▼─────────────────────────────────┐   │
-│  │          Groq LLM (llama-3.3-70b-versatile)          │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                       │                                      │
-│  ┌────────────────────▼─────────────────────────────────┐   │
-│  │          SQLite Database (SQLAlchemy ORM)             │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                     Frontend (React + Vite)                      │
+│                                                                  │
+│  ┌──────────────────┐  ┌────────────────┐  ┌────────────────┐   │
+│  │  InteractionForm  │  │ ChatAssistant  │  │ InteractionList│   │
+│  │  (Manual Entry)   │  │  (AI Chat)     │  │  (History)     │   │
+│  └────────┬─────────┘  └───────┬────────┘  └───────┬────────┘   │
+│           │                    │                    │            │
+│           └─────────┬──────────┴────────────────────┘            │
+│                     │ HTTP REST (JSON)                           │
+│              ┌──────▼──────┐                                     │
+│              │  Redux Store │                                     │
+│              └─────────────┘                                     │
+└─────────────────────────┬─────────────────────────────────────────┘
+                          │ REST API
+┌─────────────────────────▼─────────────────────────────────────────┐
+│                      Backend (FastAPI + Python)                    │
+│                                                                   │
+│  ┌───────────────────────────────────────────────────────────┐   │
+│  │                 LangGraph AI Agent                          │   │
+│  │                                                             │   │
+│  │  ┌──────────────┐ ┌──────────────┐ ┌──────────┐ ┌──────┐  │   │
+│  │  │ LogInteract  │ │ EditInteract │ │Summarize │ │Follow│  │   │
+│  │  └──────────────┘ └──────────────┘ └──────────┘ │ up   │  │   │
+│  │  ┌──────────────┐ ┌──────────────┐              └──────┘  │   │
+│  │  │ Compliance   │ │  CheckForm   │                         │   │
+│  │  └──────────────┘ └──────────────┘                         │   │
+│  └─────────────────────────┬───────────────────────────────────┘   │
+│                            │                                       │
+│  ┌─────────────────────────▼───────────────────────────────────┐   │
+│  │              Groq LLM (llama-3.3-70b-versatile)              │   │
+│  └─────────────────────────┬───────────────────────────────────┘   │
+│                            │                                       │
+│  ┌─────────────────────────▼───────────────────────────────────┐   │
+│  │              SQLite Database (SQLAlchemy ORM)                 │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
 ```
+
+### Data Flow
+
+1. User sends a message via the ChatAssistant UI or fills the manual form.
+2. For chat: the request hits `POST /interaction`, which invokes the LangGraph agent.
+3. The agent's router (`detect_intent`) classifies the intent — log, edit, summarize, followup, or compliance.
+4. The appropriate tool processes the request using Groq LLM for NLP extraction.
+5. Structured data is returned to the frontend, which auto-fills the form and optionally saves to the database.
+6. For manual form: `POST /interactions` directly persists the data via SQLAlchemy.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
-| Technology | Purpose |
-|------------|---------|
-| **React 18** | UI library with modern Hooks API |
-| **Redux Toolkit** | State management — interactions, chat, form state |
-| **Vite** | Fast dev server and build tool |
-| **react-hot-toast** | Lightweight toast notifications |
-| **Recharts** | Dashboard charts & analytics |
-| **Vitest** | Unit & integration testing |
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 18.2 | UI library with modern Hooks API |
+| Redux Toolkit | 2.1 | State management — interactions, chat, form state, prefill |
+| React Router DOM | 7.x | Client-side routing |
+| Recharts | 3.9 | Dashboard charts & analytics visualizations |
+| Vite | 5.x | Fast dev server and build tool with HMR |
+| Vitest | 1.6 | Unit and integration testing (JSDOM environment) |
+| react-hot-toast | 2.6 | Lightweight, customizable toast notifications |
+| Testing Library | 16.x | Component testing utilities |
 
 ### Backend
-| Technology | Purpose |
-|------------|---------|
-| **FastAPI** | High-performance REST API server |
-| **LangGraph** | Orchestrates the AI agent's decision graph |
-| **Groq LLM** | `llama-3.3-70b-versatile` — fast, free inference |
-| **SQLAlchemy** | ORM for database operations |
-| **SQLite** | Lightweight, file-based database |
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Python | 3.11+ | Core runtime |
+| FastAPI | 0.115 | High-performance async REST API framework |
+| Uvicorn | — | ASGI server for FastAPI |
+| LangGraph | 0.2 | Graph-based AI agent orchestration framework |
+| Groq SDK | — | LLM inference via llama-3.3-70b-versatile |
+| SQLAlchemy | — | ORM for database operations and migrations |
+| SQLite | — | Lightweight, file-based relational database |
+| Pydantic | — | Request/response model validation |
+| python-jose | — | JWT token-based authentication |
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-| Requirement | Version |
-|-------------|---------|
-| Node.js | 18+ |
-| Python | 3.11+ |
-| Groq API Key | Free at [console.groq.com](https://console.groq.com) |
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| Node.js | 18+ | Includes npm |
+| Python | 3.11+ | Includes pip |
+| Groq API Key | Free | Sign up at [console.groq.com](https://console.groq.com) |
 
 ### Installation
 
 **1. Clone the repository**
+
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/mrsaifi3/ai-first-crm-hcp-main.git
 cd ai-first-crm-hcp-main
 ```
 
 **2. Install frontend dependencies**
+
 ```bash
 npm install
 ```
 
 **3. Install backend dependencies**
+
 ```bash
 pip install -r backend/requirements.txt
 ```
@@ -145,176 +190,288 @@ Create a `.env` file in the project root:
 GROQ_API_KEY=gsk_your_actual_key_here
 ```
 
-> ⚠️ This file is already in `.gitignore` — it will not be committed.
+> This file is in `.gitignore` and will not be committed.
 
 ### Running the Application
 
-Open **two terminals**:
+Open two terminal windows:
 
-#### Terminal 1 — Backend Server
+**Terminal 1 — Backend API Server**
+
 ```bash
 python -m uvicorn backend.main:app --reload --port 8000
 ```
+
 Expected output:
 ```
 INFO:     Uvicorn running on http://127.0.0.1:8000
 INFO:     Application startup complete.
 ```
 
-#### Terminal 2 — Frontend Dev Server
+**Terminal 2 — Frontend Dev Server**
+
 ```bash
 npm run dev
 ```
+
 Expected output:
 ```
 VITE v5.x  ready in X ms
-➜  Local:   http://localhost:5173/
+  Local:   http://localhost:5173/
 ```
 
-Open **http://localhost:5173** in your browser.
+Open **http://localhost:5173** in your browser. The dashboard will load and connect to the backend automatically.
+
+### Quick Start Prompts
+
+Try these example interactions in the AI Chat tab:
+
+```
+Met Dr. Priya Sharma, cardiologist, at 10:30 AM today at Apollo Hospital.
+Discussed CardioRelief for hypertension. She was positive and requested samples for 10 patients.
+Shared brochure. Follow up next week with pricing.
+```
+
+```
+Had a call with Dr. Vikram Mehta at 3:45 PM today.
+Discussed NeuroRelax for migraine patients. He was neutral but interested.
+Needs Phase 3 trial data before prescribing.
+```
+
+```
+Met Dr. Rajesh Khanna at Max Hospital at 9 AM.
+Discussed OsteoGuard injections. He was negative due to delayed delivery.
+Refused to prescribe until RWE is shared.
+```
 
 ---
 
-## 📖 Usage Guide
+## Usage Guide
 
-### Mode 1: Manual Form
+### Mode 1: Manual Form Entry
 
-Fill in the form fields directly:
+The manual form provides a complete set of structured fields for logging interactions:
 
-| Field | Description |
-|-------|-------------|
-| HCP Name | Doctor or healthcare professional's name |
-| Interaction Type | Meeting, Call, or Email |
-| Date & Time | When the interaction occurred |
-| Attendees | Other people present |
-| Topics Discussed | Key discussion points |
-| Materials/Samples | What was shared or distributed |
-| Sentiment | Positive, Neutral, or Negative |
-| Outcomes | Results of the meeting |
-| Follow-up Actions | Next steps |
+| Field | Type | Description |
+|-------|------|-------------|
+| HCP Name | Text | Healthcare professional's name with search |
+| Interaction Type | Select | Meeting, Call, or Email |
+| Date | Date picker | Date of interaction (supports "today", "yesterday", "tomorrow") |
+| Time | Time picker | Time of interaction |
+| Attendees | Text | Other participants present |
+| Topics Discussed | Textarea | Key discussion points (supports voice input) |
+| Product | Text | Product or medicine discussed |
+| Materials Shared | Text | Documents, brochures provided |
+| Samples Distributed | Text | Product samples given |
+| Sentiment | Radio (3 options) | Positive, Neutral, or Negative with visual icons |
+| Outcomes | Textarea | Results, agreements, or decisions |
+| Follow-up Actions | Textarea | Next steps and tasks |
+| AI Suggested Follow-ups | Generated | AI-powered suggestions based on form context |
 
-Click **Submit Interaction** to save.
+Click **Submit Interaction** to save. The form validates required fields and shows success/error toasts.
 
 ### Mode 2: AI Chat
 
-Toggle to chat mode and describe your meeting naturally:
+Toggle to the AI Chat tab and describe your meeting conversationally:
 
-> *"Met Dr. Sharma today, discussed the new hypertension drug. He was positive about it and wants samples next week."*
+> *"Met Dr. Sharma today at Fortis Hospital, discussed the new hypertension drug CardioRelief. He was very positive and wants samples next week."*
 
 The AI will:
-1. Parse the message and extract structured data
-2. Auto-fill the form with extracted information
-3. Ask clarifying questions if any fields are missing
+1. Parse the natural language input and extract all structured fields
+2. Auto-fill the manual form with extracted data
+3. Ask clarifying questions if any critical fields (HCP name, topics, sentiment) are missing
+4. Save the interaction to the database automatically
 
-You can also use commands like:
-- *"Give me a summary"* — returns interaction count
-- *"Suggest follow-ups"* — AI recommends next steps
-- *"Edit the last entry"* — modify existing records
-- *"Check compliance"* — validate for compliance issues
+#### Available Chat Commands
+
+| Command | Example | Action |
+|---------|---------|--------|
+| Log interaction | *"Met Dr. X, discussed Y"* | Extracts and logs a new interaction |
+| Edit entry | *"Edit the last entry — change date to tomorrow"* | Modifies existing records |
+| Summary | *"Give me a summary"* or *"How many interactions?"* | Returns total count and stats |
+| Follow-up suggestions | *"Suggest follow-ups"* | AI recommends next actions |
+| Compliance check | *"Check compliance"* | Validates for regulatory issues |
+
+### Dashboard
+
+The analytics dashboard provides:
+- Animated counters for total interactions, weekly activity, interaction types, and active HCPs
+- Pie chart for sentiment distribution (Positive/Neutral/Negative)
+- Bar chart for interaction type breakdown (Meeting/Call/Email)
+- Top HCPs leaderboard with avatar initials
+- Recent activity feed with color-coded sentiment indicators
 
 ---
 
-## 📡 API Reference
+## API Reference
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/` | Health check — verifies server is running |
-| `POST` | `/interaction` | Send user input to the LangGraph agent |
-| `POST` | `/interactions` | Save a new interaction to the database |
-| `GET` | `/interactions` | Retrieve all logged interactions |
-| `DELETE` | `/interactions` | Delete all interactions |
-| `POST` | `/suggestions` | Generate AI follow-up suggestions |
-| `POST` | `/check-form` | Validate form completeness |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `GET` | `/` | No | Health check — verifies server is running |
+| `GET` | `/stats` | No | Dashboard statistics (counts, sentiment, types, top HCPs) |
+| `POST` | `/interaction` | No | Send user input to the LangGraph AI agent |
+| `POST` | `/interactions` | No | Save a new interaction to the database |
+| `GET` | `/interactions` | No | Retrieve paginated interactions (supports search) |
+| `DELETE` | `/interactions` | No | Delete all interactions |
+| `POST` | `/suggestions` | No | Generate AI follow-up suggestions based on form data |
+| `POST` | `/check-form` | No | Validate form completeness and compliance |
+
+### Query Parameters
+
+**GET /interactions**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | int | 1 | Page number (1-indexed) |
+| `page_size` | int | 20 | Items per page (max 500) |
+| `search` | string | "" | Search across HCP name, topics, type, sentiment, outcomes |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ai-first-crm-hcp-main/
 │
-├── src/                              # React frontend source
+├── src/                              # React frontend
 │   ├── main.jsx                      # Application entry point
-│   ├── App.jsx                       # Root layout component
-│   ├── App.css                       # Global styles
+│   ├── App.jsx                       # Root component with routing & layout
+│   ├── App.css                       # Global styles (iOS-inspired design system)
+│   ├── index.css                     # Base reset styles
+│   │
 │   ├── app/
 │   │   └── store.js                  # Redux store configuration
+│   │
 │   ├── interaction/
-│   │   ├── InteractionForm.jsx       # Manual data entry form
-│   │   ├── ChatAssistant.jsx         # AI chat interface
-│   │   ├── InteractionList.jsx       # Logged interactions display
-│   │   ├── InfoTip.jsx               # Tooltip helper component
-│   │   └── interactionSlice.js       # Redux state slice
+│   │   ├── InteractionForm.jsx       # Manual data entry form with validation
+│   │   ├── ChatAssistant.jsx         # AI chat interface with message history
+│   │   ├── InteractionList.jsx       # Paginated, searchable interaction table
+│   │   ├── InfoTip.jsx               # Field-level tooltip modal component
+│   │   └── interactionSlice.js       # Redux state slice for interactions
+│   │
 │   ├── auth/
-│   │   └── Dashboard.jsx             # Analytics dashboard with charts
-│   ├── __tests__/
-│   │   ├── setup.js                  # Test setup
-│   │   └── AuthAndDashboard.test.jsx # Dashboard & auth tests
-│   └── services/
-│       └── interactionApi.js         # HTTP client for backend API
+│   │   └── Dashboard.jsx             # Analytics dashboard with Recharts
+│   │
+│   ├── services/
+│   │   └── interactionApi.js         # HTTP client for all backend API calls
+│   │
+│   └── __tests__/
+│       ├── setup.js                  # Vitest + Testing Library setup
+│       └── AuthAndDashboard.test.jsx # Dashboard rendering & auth tests
 │
-├── backend/                          # Python backend source
-│   ├── main.py                       # FastAPI application & routes
-│   ├── database.py                   # SQLAlchemy engine & session
-│   ├── models.py                     # Database ORM models
+├── backend/                          # Python backend
+│   ├── __init__.py
+│   ├── main.py                       # FastAPI app — routes, CORS, error handling
+│   ├── database.py                   # SQLAlchemy engine, session factory, get_db
+│   ├── models.py                     # ORM model: Interaction table definition
+│   ├── auth.py                       # JWT authentication utilities
 │   ├── requirements.txt              # Python package dependencies
 │   │
 │   ├── agent/                        # LangGraph AI agent
-│   │   ├── graph.py                  # Agent state graph definition
-│   │   └── state.py                  # Graph state type definitions
+│   │   ├── graph.py                  # State graph definition & intent routing
+│   │   └── state.py                  # AgentState TypedDict definition
 │   │
-│   ├── auth.py                       # JWT authentication
-│   ├── tests/
-│   │   └── test_main.py              # Backend API tests
 │   ├── llm/                          # LLM integration
-│   │   └── groq_client.py            # Groq API client
+│   │   └── groq_client.py            # Groq API client with prompt handling
 │   │
-│   └── tools/                        # Agent tool implementations
-│       ├── log_interaction.py        # Parse & log new interaction
-│       ├── edit_interaction.py       # Modify existing interaction
-│       ├── summarize.py              # Count all interactions
-│       ├── followup.py               # Suggest follow-up actions
-│       ├── compliance.py             # Compliance validation
-│       └── check_form.py             # Form completeness check
+│   ├── tools/                        # Agent tool implementations
+│   │   ├── log_interaction.py        # Extract & log new interactions via LLM
+│   │   ├── edit_interaction.py       # Modify existing interactions
+│   │   ├── summarize.py              # Count & summarize all interactions
+│   │   ├── followup.py               # Generate follow-up recommendations
+│   │   ├── compliance.py             # Validate interactions for compliance
+│   │   └── check_form.py             # Check form completeness before submit
+│   │
+│   └── tests/
+│       └── test_main.py              # Backend API test suite
 │
 ├── .env                              # Environment variables (gitignored)
+├── .env.example                      # Environment variable template
 ├── .gitignore
-├── package.json
-├── vite.config.js
+├── package.json                      # Node dependencies & scripts
+├── package-lock.json
+├── vite.config.js                    # Vite configuration with React plugin
+├── vitest.config.js                  # Vitest configuration with JSDOM
+├── eslint.config.js                  # ESLint configuration
+├── db.json                           # JSON server data (legacy)
 └── README.md
 ```
 
 ---
 
-## 💡 Agent Tools Detail
+## Agent Tools
 
-The LangGraph agent has **5 core tools** that it routes to automatically based on user intent:
+The LangGraph agent uses a **state machine architecture** with 5 specialized tools. The router node classifies each user input based on intent keywords and conversation context, then dispatches to the correct tool:
 
-| Tool | Trigger Phrases | What It Does |
-|------|----------------|--------------|
-| **Log Interaction** | *"Met Dr...", "Had a meeting...", "Called..."* | Extracts structured data from natural language |
-| **Edit Interaction** | *"Edit...", "Update...", "Change..."* | Modifies previously saved entries |
-| **Summarize** | *"Summary...", "How many...", "Count..."* | Returns total number of logged interactions |
-| **Follow-up Recommendation** | *"Suggest...", "Next steps...", "Follow up..."* | Analyzes context and recommends actions |
-| **Compliance Check** | *"Compliance...", "Check...", "Validate..."* | Validates interactions for compliance issues |
+| Tool | File | Trigger Keywords | Function |
+|------|------|------------------|----------|
+| **Log Interaction** | `tools/log_interaction.py` | *"Met Dr...", "Had a meeting...", "Called...", "Discussed..."* | Sends user text to Groq LLM with a structured extraction prompt, parses the JSON response, extracts all fields (HCP name, specialty, product, sentiment, date/time, attendees, topics, materials, outcomes, follow-ups), saves to SQLite, and returns structured data to frontend |
+| **Edit Interaction** | `tools/edit_interaction.py` | *"Edit...", "Update...", "Change...", "Modify..."* | Handles follow-up questions from the assistant, updates existing database records based on user corrections |
+| **Summarize** | `tools/summarize.py` | *"Summary...", "How many...", "Count...", "Total..."* | Queries the database and returns aggregated statistics: total count, sentiment breakdown, and recent activity |
+| **Follow-up Recommendation** | `tools/followup.py` | *"Suggest...", "Follow up...", "Next steps..."* | Analyzes the most recent interaction context and generates actionable follow-up recommendations |
+| **Compliance Check** | `tools/compliance.py` | *"Compliance...", "Check...", "Validate..."*, *"Off-label..."* | Reviews interaction data for regulatory compliance issues, off-label discussions, and missing required fields |
 
----
+### Intent Routing Logic
 
-## ⚙️ Configuration
+The `detect_intent` function in `agent/graph.py` follows this priority:
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GROQ_API_KEY` | Yes | Your Groq API key for LLM access |
-
----
-
-## 🪟 Windows Notes
-
-- Use `python -m uvicorn` instead of `uvicorn` directly (PATH issue)
-- On first run, `crm.db` (SQLite) is created automatically in the project root
+1. If the last assistant message contains a question mark → route to **edit** (continuing conversation)
+2. Check the first 200 characters of user input for command keywords
+3. If no command detected → default to **log** (new interaction)
 
 ---
 
-## 📄 License
+## Configuration
 
-This project is licensed under the MIT License.
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `GROQ_API_KEY` | Yes | — | Your Groq API key for LLM inference. Get one free at [console.groq.com](https://console.groq.com) |
+
+---
+
+## Testing
+
+### Frontend Tests
+
+```bash
+npm test
+```
+
+Runs Vitest with JSDOM environment. Tests cover:
+- Dashboard component rendering (stats cards, charts, greetings, empty states)
+- Authentication flow simulation
+- Component mounting and API mocking via `jest-fetch-mock`
+
+### Backend Tests
+
+```bash
+cd backend
+pytest tests/ -v
+```
+
+Tests cover API endpoint responses, health check, and interaction CRUD operations.
+
+---
+
+## Windows Notes
+
+- Use `python -m uvicorn` instead of `uvicorn` directly to avoid PATH resolution issues
+- On first run, `crm.db` (SQLite database) is created automatically in the project root
+- For voice input features, use Chrome or Edge (Speech Recognition API requires secure context or localhost)
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+---
+
+<div align="center">
+  <p>
+    Built with React, FastAPI, LangGraph & Groq
+  </p>
+  <p>
+    <a href="https://github.com/mrsaifi3/ai-first-crm-hcp-main">GitHub Repository</a>
+  </p>
+</div>
