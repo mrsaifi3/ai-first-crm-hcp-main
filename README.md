@@ -95,6 +95,8 @@ The backend uses **LangGraph**, a graph-based AI agent framework, to intelligent
 | **Redux Toolkit** | State management — interactions, chat, form state |
 | **Vite** | Fast dev server and build tool |
 | **react-hot-toast** | Lightweight toast notifications |
+| **Recharts** | Dashboard charts & analytics |
+| **Vitest** | Unit & integration testing |
 
 ### Backend
 | Technology | Purpose |
@@ -243,6 +245,11 @@ ai-first-crm-hcp-main/
 │   │   ├── InteractionList.jsx       # Logged interactions display
 │   │   ├── InfoTip.jsx               # Tooltip helper component
 │   │   └── interactionSlice.js       # Redux state slice
+│   ├── auth/
+│   │   └── Dashboard.jsx             # Analytics dashboard with charts
+│   ├── __tests__/
+│   │   ├── setup.js                  # Test setup
+│   │   └── AuthAndDashboard.test.jsx # Dashboard & auth tests
 │   └── services/
 │       └── interactionApi.js         # HTTP client for backend API
 │
@@ -256,6 +263,9 @@ ai-first-crm-hcp-main/
 │   │   ├── graph.py                  # Agent state graph definition
 │   │   └── state.py                  # Graph state type definitions
 │   │
+│   ├── auth.py                       # JWT authentication
+│   ├── tests/
+│   │   └── test_main.py              # Backend API tests
 │   ├── llm/                          # LLM integration
 │   │   └── groq_client.py            # Groq API client
 │   │
