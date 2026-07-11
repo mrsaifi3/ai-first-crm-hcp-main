@@ -451,22 +451,6 @@ pytest tests/ -v
 
 Tests cover API endpoint responses, health check, and interaction CRUD operations.
 
----
-
-## Windows Notes
-
-- Use `python -m uvicorn` instead of `uvicorn` directly to avoid PATH resolution issues
-- On first run, `crm.db` (SQLite database) is created automatically in the project root
-- For voice input features, use Chrome or Edge (Speech Recognition API requires secure context or localhost)
-
----
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
----
-
 <div align="center">
   <p>
     Built with React, FastAPI, LangGraph & Groq
